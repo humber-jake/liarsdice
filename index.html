@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liar's Dice</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+
+    <style>
+        body{
+            width: 70%;
+            margin: 30vh auto;
+            text-align: center;
+        }
+    </style>
+    <div id="setupUI">
+        <div class="m-2">
+            <h2>How many players?</h2>
+            <input type="number" id="playersPerGame" min="2" max="15" value="3">
+        </div>
+        <div class="m-2">
+            <h2>How many dice per player?</h2>
+            <input type="number" id="dicePerPlayer" min="3" max="8" value="5">
+        </div>
+        <button type="submit" class="btn btn-success" id="startButton">Start Game</button>
+    </div>
+
+    <div id="gameUI" class="">
+
+        <div class="m-2 d-none" id="betDisplay"></div>
+
+        <div id="diceCup" class="d-none m-2">
+            <p>This is where your dice will go.</p>
+        <!-- add div with id dice here for each value of dice per player -->
+        </div>
+
+        <div id="rollUI" class="d-none">
+            <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
+        </div>
+
+        <div id="callUI" class="d-none">
+            <button class=" btn btn-primary" id="callButton">Call Bluff</button>
+            <button class=" btn btn-primary" id="raiseButton">Raise</button>
+        </div>
+
+        <div id="betUI" class="d-none">
+            <div>
+                <h2>Quantity</h2>
+                <!-- <input type="number" id="diceQuantity"> -->
+                <select name="" id="diceQuantity">
+
+                </select>
+            </div>
+            <div>
+                <h2>Number</h2>
+                <!-- <input type="number" id="faceValue" min="1" max="6"> -->
+                <select name="" id="faceValue">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+            <button class="m-2 btn btn-primary" id="makeBet">Make Bet</button>
+        </div>
+    </div>
+
+<script src="app.js"></script>
+</body>
+</html>
