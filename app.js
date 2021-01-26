@@ -13,6 +13,9 @@ const startButton = document.body.querySelector('#startButton'),
       rollUI = document.body.querySelector('#rollUI'),
       callUI = document.body.querySelector('#callUI'),
       betUI = document.body.querySelector('#betUI'),
+      betWarningUI = document.body.querySelector('#betWarningUI'),
+      falseBetUI = document.body.querySelector('#falseBetUI'),
+      trueBetUI = document.body.querySelector('#trueBetUI'),
       betDisplay = document.body.querySelector('#betDisplay');
       diceQuantity = document.body.querySelector('#diceQuantity');
       faceValue = document.body.querySelector('#faceValue');
@@ -32,10 +35,9 @@ let isYourTurn = true;
 
 let dicePerPlayer = 5;
 let playersPerGame = 3;
-let betQuantity = 2;
-let betValue = 2;
-
-// 'change' sucks, fix this
+let betQuantity = 3;
+let betValue = 1;
+let currentDiceValues = [];
 
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
@@ -101,19 +103,24 @@ const rollDie = () => {
 }
 const newDice = () => {
     const die = document.createElement('span');
+    const newDie = rollDie();
     die.classList.add('btn', 'btn-dark');
-    die.append(rollDie());
+    die.append(newDie);
+    currentDiceValues.push(newDie);
     diceCup.append(die);
 }
 
 // TODO: Somehow need to catch values of all dice in array that can be used for checking truth
 // Write function to only allow player to call bluff if max bet is placed???
 
+// make function that creates new rollDice button and fields for each
+// player, as they roll, pushes their dice values to array for checking.
+
 
 const rollAllDice = () => {
     diceCup.innerHTML = '';
     //  Delete old dice from last round, create new dice
-    for(i = 0; i < dicePerPlayer; i++){
+    for(i = 0; i < totalNumberOfDice; i++){
         newDice();
     }
     rollUI.classList.add('d-none');
@@ -131,15 +138,38 @@ const rollAllDice = () => {
     }
 }
 const callBluff = () => {
-
-    // Run checks to see if previous bet was true or false
+    const betAmount = [];
+    const actualAmount = [];
+    for(i = 0; i < betQuantity; i++){
+        betAmount.push(betValue);
+    }
+    console.log(`betAmount is "${betAmount}"`)
+    currentDiceValues.forEach(function(die){
+        if(die == betValue){
+            actualAmount.push(die);
+        }
+    })
+    console.log(`actualAmount is "${actualAmount}"`)
+    
+    if(betAmount.length > actualAmount.length){
+        falseBetUI.classList.remove('d-none');
+    } else {
+        trueBetUI.classList.remove('d-none');
+    }
+    callUI.classList.add('d-none');
 }
 const makeBet = () => {
-    currentBet = [betQuantity, betValue];
-    betUI.classList.add('d-none');
-    updateBetDisplay();
-    isYourTurn = false;
-    checkTurn();
+    if(betQuantity > currentBet[0] || betValue > currentBet[1]){
+        currentBet = [betQuantity, betValue];
+        betUI.classList.add('d-none');
+        updateBetDisplay();
+        isYourTurn = false;
+        checkTurn();
+        betWarningUI.classList.add('d-none');
+    } else {
+        betWarningUI.classList.remove('d-none');
+    }
+    
     // delete stored value of previous bet
 }
 const raise = () => {
