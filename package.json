@@ -1,0 +1,23 @@
+{
+  "name": "liars-dice-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humber-jake/liarsdice.git"
+  },
+  "author": "Jake Humber",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/humber-jake/liarsdice/issues"
+  },
+  "homepage": "https://github.com/humber-jake/liarsdice#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^3.1.0"
+  }
+}
