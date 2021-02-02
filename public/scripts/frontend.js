@@ -1,16 +1,3 @@
-
-const socket = io();
-var form = document.getElementById('form');
-  var input = document.getElementById('input');
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (input.value) {
-      socket.emit('chat message', input.value);
-      input.value = '';
-    }
-  });
-
 // DOM stuff
 
 const startButton = document.body.querySelector('#startButton'),
@@ -26,15 +13,20 @@ const startButton = document.body.querySelector('#startButton'),
       rollUI = document.body.querySelector('#rollUI'),
       callUI = document.body.querySelector('#callUI'),
       betUI = document.body.querySelector('#betUI'),
+      roomUI = document.body.querySelector('#roomUI'),
       betWarningUI = document.body.querySelector('#betWarningUI'),
       falseBetUI = document.body.querySelector('#falseBetUI'),
       trueBetUI = document.body.querySelector('#trueBetUI'),
       betDisplay = document.body.querySelector('#betDisplay');
       diceQuantity = document.body.querySelector('#diceQuantity');
-      faceValue = document.body.querySelector('#faceValue');
+      faceValue = document.body.querySelector('#faceValue'),
+      form = document.getElementById('form'),
+      roomInput = document.getElementById('input'),
+      nameInput = document.getElementById('username');
 
 //   GameState stuff
 
+const socket = io();
 const isGameActive = false;
 // Make variable "isGameActive" to hide or show setup
     // Use field values to set parameters for starting game
@@ -73,6 +65,16 @@ let currentBet = [betQuantity, betValue];
 
 
 // Functions:
+
+const generateRoomID = () => {
+    const roomCode = [];
+    var result           = '';
+     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+     for ( var i = 0; i < 4; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * 26));
+     }
+     return result;
+  }
 
 const updateBetDisplay = () => {
     if(betQuantity && betValue){
@@ -193,6 +195,30 @@ const raise = () => {
 const allReady = () => {
     // check if all players have rolled
 }
+
+
+form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    let username, roomID;
+    if (roomInput.value) {
+        roomID = roomInput.value.toUpperCase();
+        username = nameInput.value;
+        socket.emit('join or create room', roomID, username);
+    } else {
+        roomID = generateRoomID();
+        roomInput.value = roomID;
+        username = nameInput.value;
+        socket.emit('join or create room', roomID, username);
+    }
+    roomUI.classList.add('d-none');
+    setupUI.classList.remove('d-none');
+})    
+
+socket.on('message', (rooms, users) => {
+    console.log(rooms, users);
+})
+
+
 
 
 startButton.addEventListener('click', startGame)

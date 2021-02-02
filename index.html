@@ -16,7 +16,14 @@
             text-align: center;
         }
     </style>
-    <div id="setupUI">
+    <div id="roomUI">
+        <form id="form" action="">
+            <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
+            <input type="text" id="input" autocomplete="off" maxlength="4"/ placeholder="Room Code" autocapitalize="characters">
+            <button>Create / Join Room</button>
+        </form>
+    </div>
+    <div id="setupUI" class="d-none">
         <div class="m-2">
             <h2>How many players?</h2>
             <input type="number" id="playersPerGame" min="2" max="15" value="3">
@@ -78,10 +85,6 @@
             <p>Unfortunately, it's true.</p>
         </div>
     </div>
-
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
-      </form>
 
     <script src="node_modules/socket.io/client-dist/socket.io.js"></script>
     <script src="/public/scripts/frontend.js"></script>
