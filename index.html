@@ -11,78 +11,85 @@
 
     <style>
         body{
-            width: 70%;
-            margin: 30vh auto;
+            height: 100%;
             text-align: center;
+            margin: 2%;
+        }
+        #nameDisplay{
+            float:right;
+        }
+        #roomcode{
+            float:left;
         }
     </style>
-    <div id="roomUI">
-        <form id="form" action="">
-            <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
-            <input type="text" id="input" autocomplete="off" maxlength="4"/ placeholder="Room Code" autocapitalize="characters">
-            <button>Create / Join Room</button>
-        </form>
-    </div>
-    <div id="setupUI" class="d-none">
-        <div class="m-2">
-            <h2>How many players?</h2>
-            <input type="number" id="playersPerGame" min="2" max="15" value="3">
+    <div class="container">
+        <div id="roomUI">
+            <form id="form" action="">
+                <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
+                <input type="text" id="input" autocomplete="off" maxlength="4"/ placeholder="Room Code" autocapitalize="characters">
+                <button>Create / Join Room</button>
+            </form>
         </div>
-        <div class="m-2">
-            <h2>How many dice per player?</h2>
-            <input type="number" id="dicePerPlayer" min="3" max="8" value="5">
-        </div>
-        <button type="submit" class="btn btn-success" id="startButton">Start Game</button>
-    </div>
-
-    <div id="gameUI" class="">
-
-        <div class="m-2 d-none" id="betDisplay"></div>
-
-        <div id="diceCup" class="d-none m-2">
-            <p>This is where your dice will go.</p>
-        <!-- add div with id dice here for each value of dice per player -->
-        </div>
-
-        <div id="rollUI" class="d-none">
-            <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
-        </div>
-
-        <div id="callUI" class="d-none">
-            <button class=" btn btn-primary" id="callButton">Call Bluff</button>
-            <button class=" btn btn-primary" id="raiseButton">Raise</button>
-        </div>
-
-        <div id="betUI" class="d-none">
-            <div>
-                <h2>Quantity</h2>
-                <!-- <input type="number" id="diceQuantity"> -->
-                <select name="" id="diceQuantity">
-
-                </select>
+        <div id="setupUI" class="d-none">
+            <div class="m-2">
+                <h2>How many players?</h2>
+                <input type="number" id="playersPerGame" min="2" max="15" value="3">
             </div>
-            <div>
-                <h2>Number</h2>
-                <!-- <input type="number" id="faceValue" min="1" max="6"> -->
-                <select name="" id="faceValue">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                </select>
+            <div class="m-2">
+                <h2>How many dice per player?</h2>
+                <input type="number" id="dicePerPlayer" min="3" max="8" value="5">
             </div>
-            <button class="m-2 btn btn-primary" id="makeBet">Make Bet</button>
+            <button type="submit" class="btn btn-success" id="startButton">Start Game</button>
         </div>
-        <div id="betWarningUI" class="d-none">
-            <p>Please make a bet higher than the previous one.</p>
-        </div>
-        <div id="falseBetUI" class="d-none">
-            <p>They were indeed lying.</p>
-        </div>
-        <div id="trueBetUI" class="d-none">
-            <p>Unfortunately, it's true.</p>
+    
+        <div id="gameUI" class="">
+    
+            <div class="m-2 d-none" id="betDisplay"></div>
+    
+            <div id="diceCup" class="d-none m-2">
+                <p>This is where your dice will go.</p>
+            <!-- add div with id dice here for each value of dice per player -->
+            </div>
+    
+            <div id="rollUI" class="d-none">
+                <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
+            </div>
+    
+            <div id="callUI" class="d-none">
+                <button class=" btn btn-primary" id="callButton">Call Bluff</button>
+                <button class=" btn btn-primary" id="raiseButton">Raise</button>
+            </div>
+    
+            <div id="betUI" class="d-none">
+                <div>
+                    <h2>Quantity</h2>
+                    <!-- <input type="number" id="diceQuantity"> -->
+                    <select name="" id="diceQuantity">
+    
+                    </select>
+                </div>
+                <div>
+                    <h2>Number</h2>
+                    <!-- <input type="number" id="faceValue" min="1" max="6"> -->
+                    <select name="" id="faceValue">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <button class="m-2 btn btn-primary" id="makeBet">Make Bet</button>
+            </div>
+            <div id="warningUI" class="">
+            </div>
+            <div id="falseBetUI" class="d-none">
+                <p>They were indeed lying.</p>
+            </div>
+            <div id="trueBetUI" class="d-none">
+                <p>Unfortunately, it's true.</p>
+            </div>
         </div>
     </div>
 

@@ -14,7 +14,7 @@ const startButton = document.body.querySelector('#startButton'),
       callUI = document.body.querySelector('#callUI'),
       betUI = document.body.querySelector('#betUI'),
       roomUI = document.body.querySelector('#roomUI'),
-      betWarningUI = document.body.querySelector('#betWarningUI'),
+      warningUI = document.body.querySelector('#warningUI'),
       falseBetUI = document.body.querySelector('#falseBetUI'),
       trueBetUI = document.body.querySelector('#trueBetUI'),
       betDisplay = document.body.querySelector('#betDisplay');
@@ -180,9 +180,9 @@ const makeBet = () => {
         updateBetDisplay();
         isYourTurn = false;
         checkTurn();
-        betWarningUI.classList.add('d-none');
+        warningUI.innerHTML = '';
     } else {
-        betWarningUI.classList.remove('d-none');
+        warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
     }
     
     // delete stored value of previous bet
@@ -216,6 +216,15 @@ form.addEventListener('submit', function(e) {
 
 socket.on('message', (rooms, users) => {
     console.log(rooms, users);
+})
+socket.on('HUD', (roomID, username) => {
+    const roomCode = `<span id='roomcode'>Room Code: <b>${roomID}</b></span>`
+    const nameDisplay = `<span id='nameDisplay'>Username: <b>${username}</b></span>`
+    const roomSpan = document.createElement('span');
+    roomSpan.innerHTML = roomCode;
+    const nameSpan = document.createElement('span');
+    nameSpan.innerHTML = nameDisplay;
+document.body.prepend(roomSpan, nameSpan);
 })
 
 

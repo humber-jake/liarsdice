@@ -53,6 +53,7 @@ io.on('connection', (socket) => {
     console.log('==============')
     console.log(users)
 
+    socket.emit('HUD', roomID, username);
     socket.emit('message', rooms, users);
     socket.on('disconnect', () => {
       console.log(`${socket.id} disconnected!`);
