@@ -24,20 +24,20 @@
     </style>
     <div class="container">
         <div id="roomUI">
-            <form id="form" action="">
+            <form id="form">
                 <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
                 <input type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code" autocapitalize="characters">
                 <div>
                     <span>Dice color:</span>
                     <input type="color" id="userColor">
                 </div>
-                <button>Create / Join Room</button>
+                <button id="submitButton">Create / Join Room</button>
             </form>
         </div>
+        <div class="m-2 d-none" id="playersList">
+            <h2>Players:</h2>
+        </div>
         <div id="setupUI" class="d-none">
-            <div class="m-2" id="playersPerGame">
-                <h2>Players:</h2>
-            </div>
             <div class="m-2">
                 <h2>How many dice per player?</h2>
                 <input type="number" id="dicePerPlayer" min="3" max="8" value="5">
