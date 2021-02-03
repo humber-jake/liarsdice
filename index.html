@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liar's Dice</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <!-- <script data-main="scripts/frontend" src="scripts/require.js"></script> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 </head>
 <body>
 
@@ -21,6 +21,9 @@
         #roomcode{
             float:left;
         }
+        .dice{
+            font-size: 2rem;
+        }
     </style>
     <div class="container">
         <div id="roomUI">
@@ -29,7 +32,7 @@
                 <input type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code" autocapitalize="characters">
                 <div>
                     <span>Dice color:</span>
-                    <input type="color" id="userColor">
+                    <input type="color" id="userColor" value="#000000">
                 </div>
                 <button id="submitButton">Create / Join Room</button>
             </form>
@@ -51,6 +54,8 @@
     
             <div id="diceCup" class="d-none m-2">
                 <p>This is where your dice will go.</p>
+                <div id="myDice"></div>
+                <div id="otherDice"></div>
             <!-- add div with id dice here for each value of dice per player -->
             </div>
     

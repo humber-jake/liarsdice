@@ -31,17 +31,17 @@ io.on('connection', (socket) => {
   }
 
   console.log(`The user ${socket.id} connected`);
-  socket.on('join or create room', (roomID, username) => {
+  socket.on('join or create room', (roomID, username, diceColor) => {
 
     class User {
-      constructor(username, roomID){
+      constructor(username, roomID, diceColor){
         this.username = username,
         this.id = socket.id,
         this.number;
         this.currentRoom = roomID;
         this.isHost = false;
-        this.dice;
-        this.diceColor;
+        this.numberOfDice = 5;
+        this.color = diceColor;
       }
     }
 
@@ -49,12 +49,16 @@ io.on('connection', (socket) => {
       constructor(roomID){
         this.id = roomID;
         this.users = {};
-        this.diceValues = {};
+        this.dice = {
+          user: 'jake',
+          value: 4,
+          color: undefined
+        };
       }
     }
 
     // on connect, create USER for socket
-    const newUser = new User(username, roomID);
+    const newUser = new User(username, roomID, diceColor);
 
     // Check for room code, create if room doesn't exist
     if(!rooms[newUser.currentRoom]){
@@ -102,7 +106,17 @@ io.on('connection', (socket) => {
       }
     })
   })
-  broadcastEvent('startGame');
+  socket.on('rollDice', () => {
+    socket.emit('rollDice', users[socket.id])
+  })
+  socket.on('startGame', (id, diceAmount) => {
+    let room = rooms[users[id].currentRoom];
+    for(el in users){
+      users[el].numberOfDice = diceAmount;
+    }
+    console.log(`${room.id}: startGame`);
+    io.to(room.id).emit('startGame', diceAmount);
+  })
   broadcastEvent('rollAllDice');
   broadcastEvent('makeBet');
   broadcastEvent('raise');

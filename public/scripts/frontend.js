@@ -12,6 +12,8 @@ const startButton = document.body.querySelector('#startButton'),
       userColor = document.body.querySelector('#userColor'),
       gameUI = document.body.querySelector('#gameUI'),
       diceCup = document.body.querySelector('#diceCup'),
+      myDice = document.body.querySelector('#myDice'),
+      otherDice = document.body.querySelector('#otherDice'),
       rollUI = document.body.querySelector('#rollUI'),
       callUI = document.body.querySelector('#callUI'),
       betUI = document.body.querySelector('#betUI'),
@@ -34,6 +36,7 @@ let playersPerGame = 3;
 let betQuantity = 3;
 let betValue = 1;
 let currentDiceValues = [];
+let isYourTurn = true;
 
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
@@ -79,18 +82,19 @@ const checkTurn = () => {
         gameUI.append(message);
     }
 }
-const calculateQuantity = () => {
-    totalNumberOfDice = dicePerPlayer * playersPerGame;
-    diceQuantity.innerHTML = '';
-    for(i = 1; i <= totalNumberOfDice; i++){
-        const newOption = document.createElement('option');
-        newOption.innerText = i;
-        newOption.setAttribute('value', i);
-        diceQuantity.append(newOption);
-    }
-}
-const startGame = () => {
-    calculateQuantity();
+// const calculateQuantity = () => {
+//     totalNumberOfDice = dicePerPlayer * playersPerGame;
+//     diceQuantity.innerHTML = '';
+//     for(i = 1; i <= totalNumberOfDice; i++){
+//         const newOption = document.createElement('option');
+//         newOption.innerText = i;
+//         newOption.setAttribute('value', i);
+//         diceQuantity.append(newOption);
+//     }
+// }
+const startGame = (diceAmount) => {
+    // dicePerPlayer = diceAmount;
+    // calculateQuantity();
     if(currentBet){
         updateBetDisplay();
     }
@@ -100,6 +104,24 @@ const startGame = () => {
     betDisplay.classList.remove('d-none');
     playersList.classList.add('d-none');
 } 
+class Die {
+    constructor(user){
+        this.value = Math.floor(Math.random() * 6 + 1);
+        this.color = user.color;
+    }
+}
+const rollDice = (user) => {
+    const hand = {};
+    for(i = 0; i < user.numberOfDice; i++){
+        const die = new Die(user);
+        hand[i] = die;
+    }
+    for(die in hand){
+        const dieHTML = `<button class='btn btn-lg dice' style='background-color:${hand[die].color};color:#ffffff'><i class="bi bi-dice-${hand[die].value}"></i></button>`
+        myDice.innerHTML += dieHTML;
+    }
+   
+}
 const rollDie = () => {
     return Math.floor(Math.random() * 6 + 1)
 }
@@ -183,15 +205,16 @@ const HUD = (roomID, username) => {
 
 form.addEventListener('submit', e => {
     e.preventDefault();
-    let username, roomID;
+    let username, roomID, diceColor;
+    username = nameInput.value;
+    diceColor = userColor.value;
     if (roomInput.value) {
         roomID = roomInput.value.toUpperCase();
-        username = nameInput.value;
+
     } else {
         roomID = generateRoomID();
-        username = nameInput.value;
     }
-    socket.emit('join or create room', roomID, username);
+    socket.emit('join or create room', roomID, username, diceColor);
     socket.on('isHost', (user) => {
         if(user.isHost === true)
         setupUI.classList.remove('d-none');
@@ -205,7 +228,9 @@ form.addEventListener('submit', e => {
 
 
 socket.on('HUD', HUD)
-socket.on('startGame', startGame);
+socket.on('startGame', diceAmount => {
+    startGame(diceAmount)
+});
 socket.on('rollAllDice', rollAllDice);
 socket.on('makeBet', makeBet);
 socket.on('raise', raise);
@@ -216,13 +241,16 @@ socket.on('playerJoined', (users) => {
         playersList.innerHTML += `<h4>${users[el].username}</h4>`
         }
 })
+socket.on('rollDice', (user) => {
+    rollDice(user);
+})
 
 
 const emitStartGame = () => {
-    socket.emit('startGame', socket.id);
+    socket.emit('startGame', socket.id, dicePerPlayer);
 }
-const emitRollAllDice = () => {
-    socket.emit('rollAllDice', socket.id);
+const emitRollDice = () => {
+    socket.emit('rollDice');
 }
 const emitMakeBet = () => {
     socket.emit('makeBet', socket.id);
@@ -239,7 +267,7 @@ const emitPlayerJoined = () => {
 
 
 startButton.addEventListener('click', emitStartGame)
-rollButton.addEventListener('click', emitRollAllDice)
+rollButton.addEventListener('click', emitRollDice)
 betButton.addEventListener('click', emitMakeBet)
 raiseButton.addEventListener('click', emitRaise)
 callButton.addEventListener('click', emitCallBluff)
