@@ -26,14 +26,17 @@
         <div id="roomUI">
             <form id="form" action="">
                 <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
-                <input type="text" id="input" autocomplete="off" maxlength="4"/ placeholder="Room Code" autocapitalize="characters">
+                <input type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code" autocapitalize="characters">
+                <div>
+                    <span>Dice color:</span>
+                    <input type="color" id="userColor">
+                </div>
                 <button>Create / Join Room</button>
             </form>
         </div>
         <div id="setupUI" class="d-none">
-            <div class="m-2">
-                <h2>How many players?</h2>
-                <input type="number" id="playersPerGame" min="2" max="15" value="3">
+            <div class="m-2" id="playersPerGame">
+                <h2>Players:</h2>
             </div>
             <div class="m-2">
                 <h2>How many dice per player?</h2>

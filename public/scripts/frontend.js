@@ -8,6 +8,8 @@ const startButton = document.body.querySelector('#startButton'),
       playersPerGameField = document.body.querySelector('#playersPerGame'),
       dicePerPlayerField = document.body.querySelector('#dicePerPlayer'),
       setupUI = document.body.querySelector('#setupUI'),
+      playerSetupUI = document.body.querySelector('#playerSetupUI'),
+      userColor = document.body.querySelector('#userColor'),
       gameUI = document.body.querySelector('#gameUI'),
       diceCup = document.body.querySelector('#diceCup'),
       rollUI = document.body.querySelector('#rollUI'),
@@ -47,9 +49,9 @@ let currentDiceValues = [];
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
 })
-playersPerGameField.addEventListener('change', function(){
-    playersPerGame = parseInt(this.value);
-})
+// playersPerGameField.addEventListener('change', function(){
+//     playersPerGame = parseInt(this.value);
+// }) ^^this will be autopoulated by socket connections.
 diceQuantity.addEventListener('change', function(){
     betQuantity = parseInt(this.value);
 })
@@ -227,14 +229,38 @@ socket.on('HUD', (roomID, username) => {
 document.body.prepend(roomSpan, nameSpan);
 })
 
+// Receiving broadcast events
 
+socket.on('userJoined', (username) => {
+})
 
+socket.on('startGame', startGame);
+socket.on('rollAllDice', rollAllDice);
+socket.on('makeBet', makeBet);
+socket.on('raise', raise);
+socket.on('callBluff', callBluff);
 
-startButton.addEventListener('click', startGame)
-rollButton.addEventListener('click', rollAllDice)
-betButton.addEventListener('click', makeBet)
-raiseButton.addEventListener('click', raise)
-callButton.addEventListener('click', callBluff)
+const emitStartGame = () => {
+    socket.emit('startGame', socket.id);
+}
+const emitRollAllDice = () => {
+    socket.emit('rollAllDice', socket.id);
+}
+const emitMakeBet = () => {
+    socket.emit('makeBet', socket.id);
+}
+const emitRaise = () => {
+    socket.emit('raise', socket.id);
+}
+const emitCallBluff = () => {
+    socket.emit('callBluff', socket.id);
+}
+
+startButton.addEventListener('click', emitStartGame)
+rollButton.addEventListener('click', emitRollAllDice)
+betButton.addEventListener('click', emitMakeBet)
+raiseButton.addEventListener('click', emitRaise)
+callButton.addEventListener('click', emitCallBluff)
 
 
 

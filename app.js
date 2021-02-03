@@ -8,8 +8,10 @@ function isObjectEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
+
 let users = {};
     rooms = {};
+    
 
 app.use(express.static(__dirname))
 
@@ -18,6 +20,15 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+
+  const broadcastEvent = (event) => {
+    socket.on(event, (id) => {
+    let room = rooms[users[id].currentRoom];
+    console.log(`${room.id}: ${event}`);
+    io.to(room.id).emit(event);
+    })
+  }
+
   console.log(`The user ${socket.id} connected`);
   socket.on('join or create room', (roomID, username) => {
     class User {
@@ -32,17 +43,18 @@ io.on('connection', (socket) => {
       constructor(roomID){
         this.id = roomID;
         this.users = {};
-        }
       }
+    }
     const newUser = new User(username, roomID);
     if(!rooms[newUser.currentRoom]){
-        const newRoom = new Room(roomID);
-        newRoom.users[socket.id] = newUser;
-        rooms[roomID] = newRoom;
-      } else {
-        rooms[newUser.currentRoom].users[newUser.id] = newUser;
-        socket.join(newUser.currentRoom);
-      }
+      const newRoom = new Room(roomID);
+      newRoom.users[socket.id] = newUser;
+      rooms[roomID] = newRoom;
+      socket.join(newUser.currentRoom);
+    } else {
+      rooms[newUser.currentRoom].users[newUser.id] = newUser;
+      socket.join(newUser.currentRoom);
+    }
     users[socket.id] = newUser;
     console.log('==============')
     console.log('ROOMS')
@@ -63,9 +75,14 @@ io.on('connection', (socket) => {
       {delete rooms[roomID]}
     })
   })
-
+  broadcastEvent('startGame');
+  broadcastEvent('rollAllDice');
+  broadcastEvent('makeBet');
+  broadcastEvent('raise');
+  broadcastEvent('callBluff');
 });
 
 http.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
+
