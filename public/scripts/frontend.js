@@ -160,11 +160,19 @@ const rollDice = (user, users, rooms) => {
 }
 
 const revealDice = () => {
+    const qmarks = document.body.querySelector('#otherDice').querySelectorAll('.qmark');
     const faces = document.body.querySelector('#otherDice').querySelectorAll('.dieFace');
-    for(el in faces){
+    console.log(qmarks);
+    for(el of qmarks){
+        el.classList.add('d-none');
+    }
+    console.log(faces);
+    for(el of faces){
         el.classList.remove('d-none');
     }
 }
+// define this^ function inside the scope of another so prevent cheating 
+
 const displayDice = (dice, users) => {
     otherDice.innerHTML = '';
     for(hand in dice){
@@ -175,6 +183,7 @@ const displayDice = (dice, users) => {
             for(die in dice[hand]){
                 console.log(dice[hand][die].user.numberColor)
                 const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color}'>
+                                    <p class='qmark' style='color:${dice[hand][die].user.numberColor};font-size:2em;'>?<p>
                                     <span class='dieFace d-none'>${faces[dice[hand][die].value]}</span>
                                   </span>`
                 diceRow.innerHTML += dieHTML;
