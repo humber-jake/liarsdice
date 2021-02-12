@@ -31,17 +31,18 @@ io.on('connection', (socket) => {
   }
 
   console.log(`The user ${socket.id} connected`);
-  socket.on('join or create room', (roomID, username, diceColor) => {
+  socket.on('join or create room', (roomID, username, diceColor, numberColor) => {
 
     class User {
-      constructor(username, roomID, diceColor){
+      constructor(username, roomID, diceColor, numberColor){
         this.username = username,
         this.id = socket.id,
-        this.number;
+        this.number = 0;
         this.currentRoom = roomID;
         this.isHost = false;
         this.numberOfDice = 5;
         this.color = diceColor;
+        this.numberColor = numberColor;
       }
     }
 
@@ -49,16 +50,12 @@ io.on('connection', (socket) => {
       constructor(roomID){
         this.id = roomID;
         this.users = {};
-        this.dice = {
-          user: 'jake',
-          value: 4,
-          color: undefined
-        };
+        this.dice = {};
       }
     }
 
     // on connect, create USER for socket
-    const newUser = new User(username, roomID, diceColor);
+    const newUser = new User(username, roomID, diceColor, numberColor);
 
     // Check for room code, create if room doesn't exist
     if(!rooms[newUser.currentRoom]){
@@ -71,6 +68,7 @@ io.on('connection', (socket) => {
       // add new room to rooms object
       rooms[roomID] = newRoom;
       // user joins room socket
+     
       socket.join(newUser.currentRoom);
     } else {
       // add user to specified room object
@@ -79,8 +77,12 @@ io.on('connection', (socket) => {
       socket.join(newUser.currentRoom);
     }
 
+    // Set user turn number
+    newUser.number = Object.keys(rooms[roomID].users).length;
+
     // add user to users object, server console rooms and users
     users[socket.id] = newUser;
+
     console.log('==============')
     console.log('ROOMS')
     console.log('==============')
@@ -91,7 +93,7 @@ io.on('connection', (socket) => {
     console.log(users)
 
     // display username and room code
-    socket.emit('HUD', roomID, username);
+    socket.emit('HUD', username, socket.id);
     io.to(rooms[roomID].id).emit('playerJoined', users);
 
     // on disconnect, remove user from users object and room
@@ -106,21 +108,28 @@ io.on('connection', (socket) => {
       }
     })
   })
-  socket.on('rollDice', () => {
-    socket.emit('rollDice', users[socket.id])
-  })
   socket.on('startGame', (id, diceAmount) => {
+    // select the right room
     let room = rooms[users[id].currentRoom];
+    // Give everyone the starting dice amount;
     for(el in users){
       users[el].numberOfDice = diceAmount;
     }
+    // Pick random player number for currentTurn
+    room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length + 1);
     console.log(`${room.id}: startGame`);
-    io.to(room.id).emit('startGame', diceAmount);
+    console.log(room);
+    io.to(room.id).emit('startGame', users, rooms);
   })
-  broadcastEvent('rollAllDice');
-  broadcastEvent('makeBet');
-  broadcastEvent('raise');
-  broadcastEvent('callBluff');
+  socket.on('rollDice', () => {
+    socket.emit('rollDice', users[socket.id], users, rooms)
+  })
+  socket.on('addingDice', hand => {
+    let room = rooms[users[socket.id].currentRoom];
+    room.dice[socket.id] = hand;
+    console.log(room.dice);
+    io.to(room.id).emit('addingDice', room.dice, users);
+  })
 });
 
 http.listen(port, () => {

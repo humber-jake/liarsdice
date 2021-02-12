@@ -22,20 +22,35 @@
             float:left;
         }
         .dice{
-            font-size: 2rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.65em;
+            margin: 2px;
+            box-shadow: inset 0.3em 0.3em 0.1em #bbbbbb55,
+                              0.05em 0.1em 0.1em #333333cc, 
+                        inset 0em -0.1em 0.2em #33333355;
+        }
+        .dieFace svg{
+            align-self: center;
+            width: inherit;
+            height: inherit;
         }
     </style>
     <div class="container">
-        <div id="roomUI">
+        <div class="" id="roomUI">
             <form id="form">
                 <input type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
-                <input type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code" autocapitalize="characters">
+                <input type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code (optional)" autocapitalize="characters">
                 <div>
                     <span>Dice color:</span>
-                    <input type="color" id="userColor" value="#000000">
+                    <input type="color" id="userColor" value="#ffffee">
+                    <span>Number color:</span>
+                    <input type="color" id="numberColor" value="#000000">
                 </div>
-                <button id="submitButton">Create / Join Room</button>
+                <button class="btn btn-lg btn-primary" type="button" id="randomizeButton">Randomize Colors</button>
+                <input class="btn btn-lg btn-success" type="submit" id="submitButton" value="Create / Join Room">
             </form>
+
         </div>
         <div class="m-2 d-none" id="playersList">
             <h2>Players:</h2>
@@ -54,14 +69,15 @@
     
             <div id="diceCup" class="d-none m-2">
                 <p>This is where your dice will go.</p>
-                <div id="myDice"></div>
-                <div id="otherDice"></div>
+                <div id="myDice" class="d-inline-flex"></div>
             <!-- add div with id dice here for each value of dice per player -->
             </div>
     
             <div id="rollUI" class="d-none">
                 <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
             </div>
+
+            <div id="otherDice" class=""></div>
     
             <div id="callUI" class="d-none">
                 <button class=" btn btn-primary" id="callButton">Call Bluff</button>
