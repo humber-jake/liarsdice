@@ -1,61 +1,56 @@
 // DOM stuff
-const startButton = document.body.querySelector('#startButton'),
+const 
+    // Buttons
+      startButton = document.body.querySelector('#startButton'),
       rollButton = document.body.querySelector('#rollAllDice'),
       betButton = document.body.querySelector('#makeBet'),
       callButton = document.body.querySelector('#callButton'),
       raiseButton = document.body.querySelector('#raiseButton'),
       submitButton = document.body.querySelector('#submitButton'),
       randomizeButton = document.body.querySelector('#randomizeButton'),
-      playersList = document.body.querySelector('#playersList'),
-      dicePerPlayerField = document.body.querySelector('#dicePerPlayer'),
-      setupUI = document.body.querySelector('#setupUI'),
-      userColor = document.body.querySelector('#userColor'),
-      fontColor = document.body.querySelector('#numberColor'),
+
+    //  UI elements
       gameUI = document.body.querySelector('#gameUI'),
-      diceCup = document.body.querySelector('#diceCup'),
-      myDice = document.body.querySelector('#myDice'),
-      otherDice = document.body.querySelector('#otherDice'),
+      setupUI = document.body.querySelector('#setupUI'),
       rollUI = document.body.querySelector('#rollUI'),
       callUI = document.body.querySelector('#callUI'),
       betUI = document.body.querySelector('#betUI'),
       roomUI = document.body.querySelector('#roomUI'),
       warningUI = document.body.querySelector('#warningUI'),
-      falseBetUI = document.body.querySelector('#falseBetUI'),
-      trueBetUI = document.body.querySelector('#trueBetUI'),
-      betDisplay = document.body.querySelector('#betDisplay');
-      diceQuantity = document.body.querySelector('#diceQuantity');
-      faceValue = document.body.querySelector('#faceValue'),
+      playersList = document.body.querySelector('#playersList'),
+
+    //   Inputs
+      dicePerPlayerField = document.body.querySelector('#dicePerPlayer'),
+      userColor = document.body.querySelector('#userColor'),
+      fontColor = document.body.querySelector('#numberColor'),
       form = document.getElementById('form'),
       roomInput = document.getElementById('input'),
-      nameInput = document.getElementById('username');
+      nameInput = document.getElementById('username'),
+
+    //   Displays
+      diceCup = document.body.querySelector('#diceCup'),
+      myDice = document.body.querySelector('#myDice'),
+      otherDice = document.body.querySelector('#otherDice'),
+      betDisplay = document.body.querySelector('#betDisplay');
+      betQuantity = document.body.querySelector('#betQuantity');
+      betValue = document.body.querySelector('#betValue');
 
 //   GameState stuff
 
 const socket = io();
 let dicePerPlayer = 5;
-let playersPerGame = 3;
-let betQuantity = 3;
-let betValue = 1;
-let currentDiceValues = [];
 let isYourTurn = false;
 let roomID = undefined;
-let myID = undefined;
 
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
 })
-diceQuantity.addEventListener('change', function(){
-    betQuantity = parseInt(this.value);
-})
-faceValue.addEventListener('change', function(){
-    betValue = parseInt(this.value);
-})
-
-let totalNumberOfDice = dicePerPlayer * playersPerGame;
-   // get initial value for this from input, reduce when loses
-let currentBet = [betQuantity, betValue];
-    // rules: higher quantity of any face, or the same quantity of a higher face.
-    // Need to write code to check this, product of allowable bet will not always be higher
+// diceQuantity.addEventListener('change', function(){
+//     betQuantity = parseInt(this.value);
+// })
+// faceValue.addEventListener('change', function(){
+//     betValue = parseInt(this.value);
+// })
 
 
 // Functions:
@@ -95,15 +90,11 @@ const generateRoomID = () => {
      return result;
   }
 
-const updateBetDisplay = () => {
-    if(betQuantity && betValue){
-        betDisplay.innerText = `I bid ${betQuantity} ${betValue}s.`;
-    } else {
-        betDisplay.innerText = ``;
-    }
+const updateBetDisplay = (room) => {
+        betDisplay.innerText = `${room.currentBet.username} bet ${room.currentBet.quantity} ${room.currentBet.value}${room.currentBet.quantity == 1 ? '.' : 's.'}`;
 }
 const checkTurn = (users, rooms) => {
-        if(rooms[roomID].currentTurn === users[myID].number){
+        if(rooms[roomID].currentTurn === users[socket.id].number){
             isYourTurn = true;
         }
 }
@@ -117,10 +108,10 @@ const checkTurn = (users, rooms) => {
 //         diceQuantity.append(newOption);
 //     }
 // }
-const startGame = () => {
-    if(currentBet){
-        updateBetDisplay();
-    }
+const startGame = (users) => {
+    // if(currentBet){
+    //     updateBetDisplay();
+    // }
     setupUI.classList.add('d-none');
     diceCup.classList.remove('d-none');
     rollUI.classList.remove('d-none');
@@ -152,11 +143,23 @@ const rollDice = (user, users, rooms) => {
     socket.emit('addingDice', hand);
     rollUI.classList.add('d-none');
     checkTurn(users, rooms);
+    socket.emit('roundStart');
     if (isYourTurn === true){
         warningUI.innerText = `It's your turn!`
     } else {
         warningUI.innerText = `It's not your turn yet.`
     }
+}
+
+const roundStart = (room) => {
+    let allDice = 0, diceRolled = 0;
+    for(el in room.dice){
+        diceRolled += Object.keys(room.dice[el]).length;
+    }
+    for(el in room.users){
+        allDice += room.users[el].numberOfDice;
+    }
+    return allDice === diceRolled;
 }
 
 const revealDice = () => {
@@ -177,11 +180,11 @@ const displayDice = (dice, users) => {
     otherDice.innerHTML = '';
     for(hand in dice){
         const faces = dieFaces(users[hand]);
-        if(myID !== hand){
+        if(socket.id !== hand){
             const diceRow = document.createElement('div');
             diceRow.classList.add('row', 'justify-content-center');
             for(die in dice[hand]){
-                console.log(dice[hand][die].user.numberColor)
+                // console.log(dice[hand][die].user.numberColor)
                 const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color}'>
                                     <p class='qmark' style='color:${dice[hand][die].user.numberColor};font-size:2em;'>?<p>
                                     <span class='dieFace d-none'>${faces[dice[hand][die].value]}</span>
@@ -191,39 +194,8 @@ const displayDice = (dice, users) => {
             otherDice.append(diceRow);
         }
     }
-    // for each dice set that isn't yours, append it to the otherDice element
-    // console.log(`NEW DICE!!!!`)
-    // console.log(dice);
 }
-// const rollDie = () => {
-//     return Math.floor(Math.random() * 6 + 1)
-// }
-// const newDice = () => {
-//     const die = document.createElement('span');
-//     const newDie = rollDie();
-//     die.classList.add('btn', 'btn-dark');
-//     die.append(newDie);
-//     currentDiceValues.push(newDie);
-//     diceCup.append(die);
-// }
 
-// const rollAllDice = () => {
-//     diceCup.innerHTML = '';
-//     //  Delete old dice from last round, create new dice
-//     for(i = 0; i < totalNumberOfDice; i++){
-//         newDice();
-//     }
-//     rollUI.classList.add('d-none');
-//     if(!isYourTurn){
-//         checkTurn();
-//     } else {
-//         if(currentBet){
-//             callUI.classList.remove('d-none');
-//         } else {
-//             betUI.classList.remove('d-none');
-//         }
-//     }
-// }
 const callBluff = () => {
     const betAmount = [];
     const actualAmount = [];
@@ -245,29 +217,40 @@ const callBluff = () => {
     }
     callUI.classList.add('d-none');
 }
-const makeBet = () => {
-    if(betQuantity > currentBet[0] || betValue > currentBet[1]){
-        currentBet = [betQuantity, betValue];
+const makeBet = (room) => {
+    console.log(room.currentBet.quantity)
+    console.log(room.currentBet.value)
+    if(betQuantity.value > room.currentBet.quantity || betValue.value > room.currentBet.value){
         betUI.classList.add('d-none');
-        updateBetDisplay();
         isYourTurn = false;
-        checkTurn();
-        warningUI.innerHTML = '';
-    } else {
+        return {
+            username: room.users[socket.id].username,
+            quantity: betQuantity.value,
+            value: betValue.value
+        }
+       } else {
         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
     }
-    // delete stored value of previous bet
+
+//     if(betQuantity > currentBet[0] || betValue > currentBet[1]){
+//         currentBet = [betQuantity, betValue];
+//         betUI.classList.add('d-none');
+//         updateBetDisplay();
+//         isYourTurn = false;
+//         checkTurn();
+//         warningUI.innerHTML = '';
+//     } else {
+//         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
+//     }
+//     // delete stored value of previous bet
 }
 const raise = () => {
     betUI.classList.remove('d-none');
     callUI.classList.add('d-none');
     // delete stored value of previous bet
 }
-const allReady = () => {
-    // check if all players have rolled
-}
 const HUD = (username, id) => {
-    myID = id;
+    socket.id = id;
     const roomCode = `<span id='roomcode'>Room Code: <b>${roomID}</b></span>`
     const nameDisplay = `<span id='nameDisplay'>Username: <b>${username}</b></span>`
     const roomSpan = document.createElement('span');
@@ -310,10 +293,6 @@ socket.on('startGame', (users, rooms) => {
 socket.on('addingDice', (dice, users) => {
     displayDice(dice, users);
 });
-socket.on('rollAllDice', rollAllDice);
-socket.on('makeBet', makeBet);
-socket.on('raise', raise);
-socket.on('callBluff', callBluff);
 socket.on('playerJoined', (users) => {
     playersList.innerHTML = `<h2>Players:</h2>`;
 
@@ -326,6 +305,37 @@ socket.on('playerJoined', (users) => {
 socket.on('rollDice', (user, users, rooms) => {
     rollDice(user, users, rooms);
 })
+socket.on('roundStart', (room) => {
+    let ready = roundStart(room);
+    if(!ready){
+        warningUI.innerText = `Still waiting on players.`
+    } else if (ready && !isYourTurn){
+        warningUI.innerText = `The bet is to ${room.users[Object.keys(room.users)[room.currentTurn]].username}!`
+    }
+    if(ready && isYourTurn){
+        warningUI.innerText = '';
+        betUI.classList.remove('d-none');
+    
+        let diceQuantity = 0;
+        for(el in room.users){
+            diceQuantity += room.users[el].numberOfDice;
+        }
+        for(i = 1; i <=  diceQuantity; i++){
+            const newOption = document.createElement('option');
+            newOption.innerText = i;
+            newOption.setAttribute('value', i);
+            betQuantity.append(newOption);
+        }
+    }
+})
+socket.on('makeBet', (room) => {
+    let bet = makeBet(room);
+    socket.emit('updateBet', bet);
+})
+socket.on('updateBet', (room) => {
+    warningUI.innerText = '';
+    updateBetDisplay(room);
+})
 
 
 const emitStartGame = () => {
@@ -335,7 +345,7 @@ const emitRollDice = () => {
     socket.emit('rollDice');
 }
 const emitMakeBet = () => {
-    socket.emit('makeBet', socket.id);
+    socket.emit('makeBet');
 }
 const emitRaise = () => {
     socket.emit('raise', socket.id);
@@ -347,6 +357,9 @@ const emitPlayerJoined = () => {
     socket.emit('playerJoined', socket.id);
 }
 
+const emitRoundStart = () => {
+    socket.emit('roundStart');
+}
 
 startButton.addEventListener('click', emitStartGame)
 rollButton.addEventListener('click', emitRollDice)

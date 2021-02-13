@@ -6,42 +6,10 @@
     <title>Liar's Dice</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="/public/scripts/styles.css">
 </head>
 <body>
 
-    <style>
-        body{
-            height: 100%;
-            text-align: center;
-            margin: 2%;
-        }
-        #nameDisplay{
-            float:right;
-        }
-        #roomcode{
-            float:left;
-        }
-        .dice{
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.65em;
-            margin: 2px;
-            
-            box-shadow: inset 0.3em 0.3em 0.1em #bbbbbb55,
-                              0.05em 0.1em 0.1em #333333cc, 
-                        inset 0em -0.1em 0.2em #33333355; 
-           
-            /* box-shadow: inset 0.2em 0.4em 0.1em #bbbbbb55, 
-                        0.05em 0.05em 0.05em #333333ff, 
-                        inset 0.2em -0.2em 0.2em #33333355, 
-                        inset -0.1em 0.2em 0.3em #00000033; */
-        }
-        .dieFace svg{
-            align-self: center;
-            width: inherit;
-            height: inherit;
-        }
-    </style>
     <div class="container">
         <div class="" id="roomUI">
             <form id="form">
@@ -71,8 +39,6 @@
     
         <div id="gameUI" class="">
     
-            <div class="m-2 d-none" id="betDisplay"></div>
-    
             <div id="diceCup" class="d-none m-2">
                 <p>This is where your dice will go.</p>
                 <div id="myDice" class="d-inline-flex"></div>
@@ -83,7 +49,7 @@
                 <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
             </div>
 
-            <div id="otherDice" class=""></div>
+            <button id="roundStart" class="btn btn-lg btn-danger d-none">roundstart</button>
     
             <div id="callUI" class="d-none">
                 <button class=" btn btn-primary" id="callButton">Call Bluff</button>
@@ -93,15 +59,15 @@
             <div id="betUI" class="d-none">
                 <div>
                     <h2>Quantity</h2>
-                    <!-- <input type="number" id="diceQuantity"> -->
-                    <select name="" id="diceQuantity">
+                    <!-- <input type="number" id="betQuantity"> -->
+                    <select name="" id="betQuantity">
     
                     </select>
                 </div>
                 <div>
                     <h2>Number</h2>
                     <!-- <input type="number" id="faceValue" min="1" max="6"> -->
-                    <select name="" id="faceValue">
+                    <select name="" id="betValue">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -112,14 +78,15 @@
                 </div>
                 <button class="m-2 btn btn-primary" id="makeBet">Make Bet</button>
             </div>
+
+            <div class="m-2 d-none" id="betDisplay"></div>
+
             <div id="warningUI" class="">
+                
             </div>
-            <div id="falseBetUI" class="d-none">
-                <p>They were indeed lying.</p>
-            </div>
-            <div id="trueBetUI" class="d-none">
-                <p>Unfortunately, it's true.</p>
-            </div>
+
+            <div id="otherDice" class=""></div>
+
         </div>
     </div>
 

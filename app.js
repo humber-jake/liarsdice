@@ -51,6 +51,11 @@ io.on('connection', (socket) => {
         this.id = roomID;
         this.users = {};
         this.dice = {};
+        this.currentBet = {
+          username: undefined,
+          quantity: 0,
+          value: 1
+        }
       }
     }
 
@@ -78,7 +83,7 @@ io.on('connection', (socket) => {
     }
 
     // Set user turn number
-    newUser.number = Object.keys(rooms[roomID].users).length;
+    newUser.number = Object.keys(rooms[roomID].users).length - 1;
 
     // add user to users object, server console rooms and users
     users[socket.id] = newUser;
@@ -116,9 +121,8 @@ io.on('connection', (socket) => {
       users[el].numberOfDice = diceAmount;
     }
     // Pick random player number for currentTurn
-    room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length + 1);
+    room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length);
     console.log(`${room.id}: startGame`);
-    console.log(room);
     io.to(room.id).emit('startGame', users, rooms);
   })
   socket.on('rollDice', () => {
@@ -127,8 +131,25 @@ io.on('connection', (socket) => {
   socket.on('addingDice', hand => {
     let room = rooms[users[socket.id].currentRoom];
     room.dice[socket.id] = hand;
-    console.log(room.dice);
+    console.log(room);
     io.to(room.id).emit('addingDice', room.dice, users);
+  })
+  socket.on('roundStart', ()=> {
+    let room = rooms[users[socket.id].currentRoom];
+   io.to(room.id).emit('roundStart', room);
+  })
+  socket.on('makeBet', () => {
+    let room = rooms[users[socket.id].currentRoom];
+    socket.emit('makeBet', room)
+  })
+  socket.on('updateBet', (bet) => {
+    let room = rooms[users[socket.id].currentRoom];
+    console.log(`======= the bet ========`)
+    console.log(bet);
+    room.currentBet.username = bet.username;
+    room.currentBet.quantity = bet.quantity;
+    room.currentBet.value = bet.value;
+    io.to(room.id).emit('updateBet', room);
   })
 });
 

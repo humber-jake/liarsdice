@@ -1,0 +1,31 @@
+body{
+    height: 100%;
+    text-align: center;
+    margin: 2%;
+}
+#nameDisplay{
+    float:right;
+}
+#roomcode{
+    float:left;
+}
+.dice{
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.65em;
+    margin: 2px;
+    
+    box-shadow: inset 0.3em 0.3em 0.1em #bbbbbb55,
+                      0.05em 0.1em 0.1em #333333cc, 
+                inset 0em -0.1em 0.2em #33333355; 
+   
+    /* box-shadow: inset 0.2em 0.4em 0.1em #bbbbbb55, 
+                0.05em 0.05em 0.05em #333333ff, 
+                inset 0.2em -0.2em 0.2em #33333355, 
+                inset -0.1em 0.2em 0.3em #00000033; */
+}
+.dieFace svg{
+    align-self: center;
+    width: inherit;
+    height: inherit;
+}
