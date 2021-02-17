@@ -22,14 +22,6 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
 
-  const broadcastEvent = (event) => {
-    socket.on(event, (id) => {
-    let room = rooms[users[id].currentRoom];
-    console.log(`${room.id}: ${event}`);
-    io.to(room.id).emit(event);
-    })
-  }
-
   console.log(`The user ${socket.id} connected`);
   socket.on('join or create room', (roomID, username, diceColor, numberColor) => {
 
@@ -126,7 +118,8 @@ io.on('connection', (socket) => {
     io.to(room.id).emit('startGame', users, rooms);
   })
   socket.on('rollDice', () => {
-    socket.emit('rollDice', users[socket.id], users, rooms)
+    let room = rooms[users[socket.id].currentRoom];
+    socket.emit('rollDice', users[socket.id], users, room)
   })
   socket.on('addingDice', hand => {
     let room = rooms[users[socket.id].currentRoom];
@@ -149,13 +142,26 @@ io.on('connection', (socket) => {
     room.currentBet.username = bet.username;
     room.currentBet.quantity = bet.quantity;
     room.currentBet.value = bet.value;
-    io.to(room.id).emit('updateBet', room);
+    const nextTurn = (room) => {
+      let result = (room.currentTurn + 1)% Object.keys(room.users).length
+      return result
+    }
+    room.currentTurn = nextTurn(room);
+    io.to(room.id).emit('updateBet', users, room);
+  })
+  socket.on('clickedRaise', () => {
+    let room = rooms[users[socket.id].currentRoom];
+    socket.emit('clickedRaise', room);
+  })
+  socket.on('callBluff', () => {
+    let room = rooms[users[socket.id].currentRoom];
+    // figure out if the dice exist or not
+    // if lying, remove die from Liar, set current turn, give next round button
+    // if not lying, remove die from Caller, set current turn, give next round button
+    // Broadcast outcome to everyone
   })
 });
 
 http.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
-
-
-

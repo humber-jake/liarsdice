@@ -8,6 +8,7 @@ const
       raiseButton = document.body.querySelector('#raiseButton'),
       submitButton = document.body.querySelector('#submitButton'),
       randomizeButton = document.body.querySelector('#randomizeButton'),
+      nextRoundButton = document.body.querySelector('#nextRound'),
 
     //  UI elements
       gameUI = document.body.querySelector('#gameUI'),
@@ -17,6 +18,7 @@ const
       betUI = document.body.querySelector('#betUI'),
       roomUI = document.body.querySelector('#roomUI'),
       warningUI = document.body.querySelector('#warningUI'),
+      roundEndUI = document.body.querySelector('#roundEndUI'),
       playersList = document.body.querySelector('#playersList'),
 
     //   Inputs
@@ -26,14 +28,15 @@ const
       form = document.getElementById('form'),
       roomInput = document.getElementById('input'),
       nameInput = document.getElementById('username'),
+      betQuantity = document.body.querySelector('#betQuantity');
+      betValue = document.body.querySelector('#betValue'),
 
     //   Displays
       diceCup = document.body.querySelector('#diceCup'),
       myDice = document.body.querySelector('#myDice'),
       otherDice = document.body.querySelector('#otherDice'),
       betDisplay = document.body.querySelector('#betDisplay');
-      betQuantity = document.body.querySelector('#betQuantity');
-      betValue = document.body.querySelector('#betValue');
+      endMessage = document.body.querySelector('#endMessage');
 
 //   GameState stuff
 
@@ -41,6 +44,7 @@ const socket = io();
 let dicePerPlayer = 5;
 let isYourTurn = false;
 let roomID = undefined;
+let isBetOkay = false;
 
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
@@ -93,21 +97,25 @@ const generateRoomID = () => {
 const updateBetDisplay = (room) => {
         betDisplay.innerText = `${room.currentBet.username} bet ${room.currentBet.quantity} ${room.currentBet.value}${room.currentBet.quantity == 1 ? '.' : 's.'}`;
 }
-const checkTurn = (users, rooms) => {
-        if(rooms[roomID].currentTurn === users[socket.id].number){
+const checkTurn = (users, room) => {
+        if(room.currentTurn === users[socket.id].number){
             isYourTurn = true;
         }
+
 }
-// const calculateQuantity = () => {
-//     totalNumberOfDice = dicePerPlayer * playersPerGame;
-//     diceQuantity.innerHTML = '';
-//     for(i = 1; i <= totalNumberOfDice; i++){
-//         const newOption = document.createElement('option');
-//         newOption.innerText = i;
-//         newOption.setAttribute('value', i);
-//         diceQuantity.append(newOption);
-//     }
-// }
+const calculateQuantity = (room) => {
+    betQuantity.innerHTML = '';
+    let diceQuantity = 0;
+    for(el in room.users){
+        diceQuantity += room.users[el].numberOfDice;
+    }
+    for(i = 1; i <=  diceQuantity; i++){
+        const newOption = document.createElement('option');
+        newOption.innerText = i;
+        newOption.setAttribute('value', i);
+        betQuantity.append(newOption);
+    }
+}
 const startGame = (users) => {
     // if(currentBet){
     //     updateBetDisplay();
@@ -125,7 +133,7 @@ class Die {
         this.color = user.color;
     }
 }
-const rollDice = (user, users, rooms) => {
+const rollDice = (user, users, room) => {
     diceCup.firstElementChild.innerHTML = '';
     const hand = {};
     for(i = 0; i < user.numberOfDice; i++){
@@ -142,7 +150,7 @@ const rollDice = (user, users, rooms) => {
     // console.log(hand);
     socket.emit('addingDice', hand);
     rollUI.classList.add('d-none');
-    checkTurn(users, rooms);
+    checkTurn(users, room);
     socket.emit('roundStart');
     if (isYourTurn === true){
         warningUI.innerText = `It's your turn!`
@@ -197,30 +205,13 @@ const displayDice = (dice, users) => {
 }
 
 const callBluff = () => {
-    const betAmount = [];
-    const actualAmount = [];
-    for(i = 0; i < betQuantity; i++){
-        betAmount.push(betValue);
-    }
-    console.log(`betAmount is "${betAmount}"`)
-    currentDiceValues.forEach(function(die){
-        if(die == betValue){
-            actualAmount.push(die);
-        }
-    })
-    console.log(`actualAmount is "${actualAmount}"`)
     
-    if(betAmount.length > actualAmount.length){
-        falseBetUI.classList.remove('d-none');
-    } else {
-        trueBetUI.classList.remove('d-none');
-    }
-    callUI.classList.add('d-none');
 }
 const makeBet = (room) => {
     console.log(room.currentBet.quantity)
     console.log(room.currentBet.value)
-    if(betQuantity.value > room.currentBet.quantity || betValue.value > room.currentBet.value){
+    // If quantity is higher || Quantity is same and value is higher
+    if(Number(betQuantity.value) > room.currentBet.quantity || Number(betQuantity.value) == room.currentBet.quantity && Number(betValue.value) > room.currentBet.value){
         betUI.classList.add('d-none');
         isYourTurn = false;
         return {
@@ -230,6 +221,7 @@ const makeBet = (room) => {
         }
        } else {
         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
+        return false;
     }
 
 //     if(betQuantity > currentBet[0] || betValue > currentBet[1]){
@@ -244,10 +236,8 @@ const makeBet = (room) => {
 //     }
 //     // delete stored value of previous bet
 }
-const raise = () => {
-    betUI.classList.remove('d-none');
-    callUI.classList.add('d-none');
-    // delete stored value of previous bet
+const raise = (room) => {
+
 }
 const HUD = (username, id) => {
     socket.id = id;
@@ -302,8 +292,8 @@ socket.on('playerJoined', (users) => {
         }
     }
 })
-socket.on('rollDice', (user, users, rooms) => {
-    rollDice(user, users, rooms);
+socket.on('rollDice', (user, users, room) => {
+    rollDice(user, users, room);
 })
 socket.on('roundStart', (room) => {
     let ready = roundStart(room);
@@ -315,26 +305,27 @@ socket.on('roundStart', (room) => {
     if(ready && isYourTurn){
         warningUI.innerText = '';
         betUI.classList.remove('d-none');
-    
-        let diceQuantity = 0;
-        for(el in room.users){
-            diceQuantity += room.users[el].numberOfDice;
-        }
-        for(i = 1; i <=  diceQuantity; i++){
-            const newOption = document.createElement('option');
-            newOption.innerText = i;
-            newOption.setAttribute('value', i);
-            betQuantity.append(newOption);
-        }
+        calculateQuantity(room);
     }
 })
 socket.on('makeBet', (room) => {
     let bet = makeBet(room);
-    socket.emit('updateBet', bet);
+    if(bet != false){
+        socket.emit('updateBet', bet);
+    }
 })
-socket.on('updateBet', (room) => {
+socket.on('updateBet', (users, room) => {
     warningUI.innerText = '';
     updateBetDisplay(room);
+    checkTurn(users, room);
+    if(isYourTurn){
+        callUI.classList.remove('d-none');
+    }
+})
+socket.on('clickedRaise', (room) => {
+    calculateQuantity(room);
+    betUI.classList.remove('d-none');
+    callUI.classList.add('d-none');
 })
 
 
@@ -347,14 +338,14 @@ const emitRollDice = () => {
 const emitMakeBet = () => {
     socket.emit('makeBet');
 }
-const emitRaise = () => {
-    socket.emit('raise', socket.id);
+const emitClickedRaise = () => {
+    socket.emit('clickedRaise');
 }
 const emitCallBluff = () => {
-    socket.emit('callBluff', socket.id);
+    socket.emit('callBluff');
 }
 const emitPlayerJoined = () => {
-    socket.emit('playerJoined', socket.id);
+    socket.emit('playerJoined');
 }
 
 const emitRoundStart = () => {
@@ -364,6 +355,6 @@ const emitRoundStart = () => {
 startButton.addEventListener('click', emitStartGame)
 rollButton.addEventListener('click', emitRollDice)
 betButton.addEventListener('click', emitMakeBet)
-raiseButton.addEventListener('click', emitRaise)
+raiseButton.addEventListener('click', emitClickedRaise)
 callButton.addEventListener('click', emitCallBluff)
 randomizeButton.addEventListener('click', randomColor)
