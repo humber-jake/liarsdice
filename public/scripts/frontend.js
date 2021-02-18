@@ -36,7 +36,6 @@ const
       myDice = document.body.querySelector('#myDice'),
       otherDice = document.body.querySelector('#otherDice'),
       betDisplay = document.body.querySelector('#betDisplay');
-      endMessage = document.body.querySelector('#endMessage');
 
 //   GameState stuff
 
@@ -97,8 +96,8 @@ const generateRoomID = () => {
 const updateBetDisplay = (room) => {
         betDisplay.innerText = `${room.currentBet.username} bet ${room.currentBet.quantity} ${room.currentBet.value}${room.currentBet.quantity == 1 ? '.' : 's.'}`;
 }
-const checkTurn = (users, room) => {
-        if(room.currentTurn === users[socket.id].number){
+const checkTurn = (room) => {
+        if(room.currentTurn === room.users[socket.id].number){
             isYourTurn = true;
         }
 
@@ -136,6 +135,10 @@ class Die {
 const rollDice = (user, users, room) => {
     diceCup.firstElementChild.innerHTML = '';
     const hand = {};
+    if(user.numberOfDice == 0){
+        warningUI.innerHTML = `You have no dice! You're out!`;
+        return;
+    }
     for(i = 0; i < user.numberOfDice; i++){
         const die = new Die(user);
         hand[i] = die;
@@ -150,7 +153,7 @@ const rollDice = (user, users, room) => {
     // console.log(hand);
     socket.emit('addingDice', hand);
     rollUI.classList.add('d-none');
-    checkTurn(users, room);
+    checkTurn(room);
     socket.emit('roundStart');
     if (isYourTurn === true){
         warningUI.innerText = `It's your turn!`
@@ -169,20 +172,14 @@ const roundStart = (room) => {
     }
     return allDice === diceRolled;
 }
-
-const revealDice = () => {
-    const qmarks = document.body.querySelector('#otherDice').querySelectorAll('.qmark');
-    const faces = document.body.querySelector('#otherDice').querySelectorAll('.dieFace');
-    console.log(qmarks);
-    for(el of qmarks){
-        el.classList.add('d-none');
-    }
-    console.log(faces);
-    for(el of faces){
-        el.classList.remove('d-none');
-    }
+const nextRound = (startingPlayer) => {
+    betDisplay.innerHTML = '';
+    warningUI.innerHTML = '';
+    myDice.innerHTML = '';
+    otherDice.innerHTML = '';
+    diceCup.firstElementChild.innerHTML = `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.`;
+    rollUI.classList.remove('d-none');
 }
-// define this^ function inside the scope of another so prevent cheating 
 
 const displayDice = (dice, users) => {
     otherDice.innerHTML = '';
@@ -204,8 +201,26 @@ const displayDice = (dice, users) => {
     }
 }
 
-const callBluff = () => {
-    
+const callBluff = (room, bluffer, caller, message) => {
+    const revealDice = () => {
+        const qmarks = document.body.querySelector('#otherDice').querySelectorAll('.qmark');
+        const faces = document.body.querySelector('#otherDice').querySelectorAll('.dieFace');
+        for(el of qmarks){
+            el.classList.add('d-none');
+        }
+        for(el of faces){
+            el.classList.remove('d-none');
+        }
+    }
+    console.log(message);
+    warningUI.innerHTML = `<p>${message}</p>`;
+    revealDice();
+    roundEndUI.classList.remove('d-none');
+    isYourTurn = false;
+    checkTurn(room);
+    if(isYourTurn){
+        nextRoundButton.classList.remove('d-none');
+    }
 }
 const makeBet = (room) => {
     console.log(room.currentBet.quantity)
@@ -223,21 +238,6 @@ const makeBet = (room) => {
         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
         return false;
     }
-
-//     if(betQuantity > currentBet[0] || betValue > currentBet[1]){
-//         currentBet = [betQuantity, betValue];
-//         betUI.classList.add('d-none');
-//         updateBetDisplay();
-//         isYourTurn = false;
-//         checkTurn();
-//         warningUI.innerHTML = '';
-//     } else {
-//         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
-//     }
-//     // delete stored value of previous bet
-}
-const raise = (room) => {
-
 }
 const HUD = (username, id) => {
     socket.id = id;
@@ -300,7 +300,7 @@ socket.on('roundStart', (room) => {
     if(!ready){
         warningUI.innerText = `Still waiting on players.`
     } else if (ready && !isYourTurn){
-        warningUI.innerText = `The bet is to ${room.users[Object.keys(room.users)[room.currentTurn]].username}!`
+        warningUI.innerText = `It's ${room.users[Object.keys(room.users)[room.currentTurn]].username}'s turn!`
     }
     if(ready && isYourTurn){
         warningUI.innerText = '';
@@ -314,10 +314,10 @@ socket.on('makeBet', (room) => {
         socket.emit('updateBet', bet);
     }
 })
-socket.on('updateBet', (users, room) => {
+socket.on('updateBet', (room) => {
     warningUI.innerText = '';
     updateBetDisplay(room);
-    checkTurn(users, room);
+    checkTurn(room);
     if(isYourTurn){
         callUI.classList.remove('d-none');
     }
@@ -326,6 +326,12 @@ socket.on('clickedRaise', (room) => {
     calculateQuantity(room);
     betUI.classList.remove('d-none');
     callUI.classList.add('d-none');
+})
+socket.on('callBluff', (room, bluffer, caller, message) => {
+    callBluff(room, bluffer, caller, message);
+})
+socket.on('nextRound', (startingPlayer) => {
+    nextRound(startingPlayer);
 })
 
 
@@ -342,6 +348,7 @@ const emitClickedRaise = () => {
     socket.emit('clickedRaise');
 }
 const emitCallBluff = () => {
+    callUI.classList.add('d-none');
     socket.emit('callBluff');
 }
 const emitPlayerJoined = () => {
@@ -352,9 +359,15 @@ const emitRoundStart = () => {
     socket.emit('roundStart');
 }
 
+const emitNextRound = () => {
+    nextRoundButton.classList.add('d-none');
+    socket.emit('nextRound');
+}
+
 startButton.addEventListener('click', emitStartGame)
 rollButton.addEventListener('click', emitRollDice)
 betButton.addEventListener('click', emitMakeBet)
 raiseButton.addEventListener('click', emitClickedRaise)
 callButton.addEventListener('click', emitCallBluff)
 randomizeButton.addEventListener('click', randomColor)
+nextRoundButton.addEventListener('click', emitNextRound);
