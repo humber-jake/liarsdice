@@ -9,6 +9,7 @@ const
       submitButton = document.body.querySelector('#submitButton'),
       randomizeButton = document.body.querySelector('#randomizeButton'),
       nextRoundButton = document.body.querySelector('#nextRound'),
+      playAgainButton = document.body.querySelector('#playAgain'),
 
     //  UI elements
       gameUI = document.body.querySelector('#gameUI'),
@@ -18,7 +19,6 @@ const
       betUI = document.body.querySelector('#betUI'),
       roomUI = document.body.querySelector('#roomUI'),
       warningUI = document.body.querySelector('#warningUI'),
-      roundEndUI = document.body.querySelector('#roundEndUI'),
       playersList = document.body.querySelector('#playersList'),
 
     //   Inputs
@@ -44,17 +44,11 @@ let dicePerPlayer = 5;
 let isYourTurn = false;
 let roomID = undefined;
 let isBetOkay = false;
+let isOut = false;
 
 dicePerPlayerField.addEventListener('change', function(){
     dicePerPlayer = parseInt(this.value);
 })
-// diceQuantity.addEventListener('change', function(){
-//     betQuantity = parseInt(this.value);
-// })
-// faceValue.addEventListener('change', function(){
-//     betValue = parseInt(this.value);
-// })
-
 
 // Functions:
 
@@ -78,16 +72,15 @@ const dieFaces = (user) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" 
 
 
 const randomColor = () => {
-    const color = () => {return Math.floor(Math.random()*16777215).toString(16);}
+    const color = () => {return Math.floor(Math.random()*16777215).toString(16).padStart(6, 'f')}
     userColor.value = `#${color()}`
     fontColor.value = `#${color()}`
 }
 
 const generateRoomID = () => {
-    const roomCode = [];
-    var result           = '';
-     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-     for ( var i = 0; i < 4; i++ ) {
+    let result           = '';
+    let characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for(i = 0; i < 4; i++ ) {
         result += characters.charAt(Math.floor(Math.random() * 26));
      }
      return result;
@@ -97,10 +90,15 @@ const updateBetDisplay = (room) => {
         betDisplay.innerText = `${room.currentBet.username} bet ${room.currentBet.quantity} ${room.currentBet.value}${room.currentBet.quantity == 1 ? '.' : 's.'}`;
 }
 const checkTurn = (room) => {
+    if(isOut){
+        return;
+    } else{
         if(room.currentTurn === room.users[socket.id].number){
             isYourTurn = true;
+        } else {
+            isYourTurn = false;
         }
-
+    }
 }
 const calculateQuantity = (room) => {
     betQuantity.innerHTML = '';
@@ -115,16 +113,23 @@ const calculateQuantity = (room) => {
         betQuantity.append(newOption);
     }
 }
-const startGame = (users) => {
-    // if(currentBet){
-    //     updateBetDisplay();
-    // }
+const startGame = () => {
     setupUI.classList.add('d-none');
     diceCup.classList.remove('d-none');
     rollUI.classList.remove('d-none');
     betDisplay.classList.remove('d-none');
     playersList.classList.add('d-none');
 } 
+const HUD = (username, id) => {
+    socket.id = id;
+    const roomCode = `<span id='roomcode'>Room Code: <b>${roomID}</b></span>`
+    const nameDisplay = `<span id='nameDisplay'>Username: <b>${username}</b></span>`
+    const roomSpan = document.createElement('span');
+    roomSpan.innerHTML = roomCode;
+    const nameSpan = document.createElement('span');
+    nameSpan.innerHTML = nameDisplay;
+    document.body.prepend(roomSpan, nameSpan);
+}
 class Die {
     constructor(user){
         this.user = user;
@@ -135,10 +140,6 @@ class Die {
 const rollDice = (user, users, room) => {
     diceCup.firstElementChild.innerHTML = '';
     const hand = {};
-    if(user.numberOfDice == 0){
-        warningUI.innerHTML = `You have no dice! You're out!`;
-        return;
-    }
     for(i = 0; i < user.numberOfDice; i++){
         const die = new Die(user);
         hand[i] = die;
@@ -150,7 +151,6 @@ const rollDice = (user, users, room) => {
        
         myDice.innerHTML += dieHTML;
     }
-    // console.log(hand);
     socket.emit('addingDice', hand);
     rollUI.classList.add('d-none');
     checkTurn(room);
@@ -177,7 +177,7 @@ const nextRound = (startingPlayer) => {
     warningUI.innerHTML = '';
     myDice.innerHTML = '';
     otherDice.innerHTML = '';
-    diceCup.firstElementChild.innerHTML = `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.`;
+    diceCup.firstElementChild.innerHTML = `${!isOut ? `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.` : `<br> It's ${startingPlayer.username}'s turn.`}`;
     rollUI.classList.remove('d-none');
 }
 
@@ -212,16 +212,23 @@ const callBluff = (room, bluffer, caller, message) => {
             el.classList.remove('d-none');
         }
     }
-    console.log(message);
     warningUI.innerHTML = `<p>${message}</p>`;
     revealDice();
-    roundEndUI.classList.remove('d-none');
     isYourTurn = false;
     checkTurn(room);
     if(isYourTurn){
         nextRoundButton.classList.remove('d-none');
     }
 }
+const playerOut = () => {
+    isOut = true;
+    warningUI.innerHTML += `<h2>Oh no! You're out.</h2>`
+    socket.emit('kickMe')
+    rollUI.innerHTML = '';
+    callUI.innerHTML = '';
+    betUI.innerHTML = '';
+}
+
 const makeBet = (room) => {
     console.log(room.currentBet.quantity)
     console.log(room.currentBet.value)
@@ -239,15 +246,17 @@ const makeBet = (room) => {
         return false;
     }
 }
-const HUD = (username, id) => {
-    socket.id = id;
-    const roomCode = `<span id='roomcode'>Room Code: <b>${roomID}</b></span>`
-    const nameDisplay = `<span id='nameDisplay'>Username: <b>${username}</b></span>`
-    const roomSpan = document.createElement('span');
-    roomSpan.innerHTML = roomCode;
-    const nameSpan = document.createElement('span');
-    nameSpan.innerHTML = nameDisplay;
-    document.body.prepend(roomSpan, nameSpan);
+const winner = users => {
+    rollUI.innerHTML = '';
+    callUI.innerHTML = '';
+    betUI.innerHTML = '';
+    nextRoundButton.classList.add('d-none');
+    if(socket.id == Object.keys(users)[0]){
+        warningUI.innerHTML = `<h2>You win!</h2>`
+    } else {
+        warningUI.innerHTML = `<h2>Game over! ${users[Object.keys(users)[0]].username} wins!</h2>`
+    }
+    playAgainButton.classList.remove('d-none');
 }
 
 form.addEventListener('submit', e => {
@@ -277,8 +286,8 @@ form.addEventListener('submit', e => {
 socket.on('HUD', (username, id) => {
     HUD(username, id);
 });
-socket.on('startGame', (users, rooms) => {
-    startGame(users, rooms)
+socket.on('startGame', () => {
+    startGame()
 });
 socket.on('addingDice', (dice, users) => {
     displayDice(dice, users);
@@ -332,6 +341,12 @@ socket.on('callBluff', (room, bluffer, caller, message) => {
 })
 socket.on('nextRound', (startingPlayer) => {
     nextRound(startingPlayer);
+})
+socket.on('playerOut', () => {
+    playerOut();
+})
+socket.on('winner', users => {
+    winner(users);
 })
 
 

@@ -32,7 +32,7 @@
         <div id="setupUI" class="d-none">
             <div class="m-2">
                 <h2>How many dice per player?</h2>
-                <input type="number" id="dicePerPlayer" min="3" max="8" value="5">
+                <input type="number" id="dicePerPlayer" min="1" max="8" value="5">
             </div>
             <button type="submit" class="btn btn-success" id="startButton">Start Game</button>
         </div>
@@ -48,8 +48,6 @@
             <div id="rollUI" class="d-none">
                 <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
             </div>
-
-            <button id="roundStart" class="btn btn-lg btn-danger d-none">roundstart</button>
     
             <div id="callUI" class="d-none">
                 <button class=" btn btn-primary" id="callButton">Call Bluff</button>
@@ -85,10 +83,9 @@
 
             <div id="otherDice" class=""></div>
 
-            <div id="roundEndUI" class="d-none">
-                <button id="nextRound" class="btn btn-lg btn-success d-none">Start Next Round</button>
-            </div>
+            <button id="nextRound" class="btn btn-lg btn-success d-none">Start Next Round</button>
 
+            <button id="playAgain" class="btn btn-lg btn-success d-none" onclick="location.href=''" type="button">Play Again?</button>
 
         </div>
     </div>

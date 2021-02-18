@@ -29,16 +29,11 @@ const previousTurn = (room) => {
 const getBluffer = (room) => {
   let bluffer;
   let prevTurn = previousTurn(room);
-  console.log(`====== prevTurn result in getBluffer =======`)
-  console.log(prevTurn)
   for(user in room.users){
-    console.log(`${room.users[user].username}: ${room.users[user].number}`);
     if(room.users[user].number == prevTurn){
       bluffer = user;
     }
   }
-  console.log(`======= bluffer in getBluffer =====`)
-  console.log(bluffer)
   return bluffer;
 }
 
@@ -114,10 +109,6 @@ io.on('connection', (socket) => {
     console.log('ROOMS')
     console.log('==============')
     console.log(rooms)
-    console.log('==============')
-    console.log('USERS')
-    console.log('==============')
-    console.log(users)
 
     // display username and room code
     socket.emit('HUD', username, socket.id);
@@ -126,9 +117,12 @@ io.on('connection', (socket) => {
     // on disconnect, remove user from users object and room
     socket.on('disconnect', () => {
       console.log(`${socket.id} disconnected!`);
-      delete users[socket.id];
-      delete rooms[roomID].users[socket.id]
-
+      if(users[socket.id]){
+        delete users[socket.id];
+      }
+      if(rooms[roomID].users[socket.id]){
+        delete rooms[roomID].users[socket.id]
+      }
       // if no users in room on disconnect, delete room
       if(isObjectEmpty(rooms[roomID].users) === true){
         delete rooms[roomID]
@@ -145,30 +139,36 @@ io.on('connection', (socket) => {
     // Pick random player number for currentTurn
     room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length);
     console.log(`${room.id}: startGame`);
-    io.to(room.id).emit('startGame', users, rooms);
+    io.to(room.id).emit('startGame');
+    console.log('==============')
+    console.log('USERS')
+    console.log('==============')
+    console.log(users)
   })
   socket.on('rollDice', () => {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: rollDice`)
     socket.emit('rollDice', users[socket.id], users, room)
   })
   socket.on('addingDice', hand => {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: addingDice`)
     room.dice[socket.id] = hand;
-    console.log(room);
     io.to(room.id).emit('addingDice', room.dice, users);
   })
   socket.on('roundStart', ()=> {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: roundStart`)
    io.to(room.id).emit('roundStart', room);
   })
   socket.on('makeBet', () => {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: makeBet`)
     socket.emit('makeBet', room)
   })
   socket.on('updateBet', (bet) => {
     let room = rooms[users[socket.id].currentRoom];
-    console.log(`======= the bet ========`)
-    console.log(bet);
+    console.log(`${room.id}: updateBet`)
     room.currentBet.username = bet.username;
     room.currentBet.quantity = bet.quantity;
     room.currentBet.value = bet.value;
@@ -177,6 +177,7 @@ io.on('connection', (socket) => {
   })
   socket.on('clickedRaise', () => {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: clickedRaise`)
     socket.emit('clickedRaise', room);
   })
   socket.on('callBluff', () => {
@@ -185,47 +186,46 @@ io.on('connection', (socket) => {
     let caller = users[socket.id];
     let blufferID = getBluffer(room);
     let bluffer = users[blufferID];
+    let message = '';
+    let loser;
+
+    console.log(`${room.id}: callBluff`)
+
     for(hand in room.dice){
-      console.log(`======== hand ======`)
-      console.log(hand)
       for(die in room.dice[hand]){
-        console.log(`room.dice[hand]: ${room.dice[hand]}`);
-        console.log(`die: ${room.dice[hand][die].value}`);
         if(room.dice[hand][die].value == room.currentBet.value){
           actualQuantity.push(room.dice[hand][die].value);
         }
       }
     }
-    console.log(`======== actualQuantity ==========`);
-    console.log(actualQuantity);
-    console.log(`========= current bet quantity =======`);
-    console.log(room.currentBet.quantity);
-    console.log(`======= caller ==========`);
-    console.log(caller);
-    console.log(`========= blufferID =======`);
-    console.log(blufferID);
-    console.log(`========= bluffer =======`);
-    console.log(bluffer);
-    let message = '';
+
     if(actualQuantity.length >= room.currentBet.quantity){
-      message = `${bluffer.username} was telling the truth! ${caller.username} loses a die.`
       caller.numberOfDice--;
       room.currentTurn = caller.number;
+      message = `${bluffer.username} was telling the truth! ${caller.numberOfDice == 0 ? `${caller.username} is out!` : `${caller.username} loses a die!`}`
+      loser = caller;
     } else {
-      message = `${bluffer.username} was indeed, bluffing. ${bluffer.username} loses a die.`
       bluffer.numberOfDice--;
       room.currentTurn = bluffer.number;
+      message = `${bluffer.username} was indeed bluffing. ${bluffer.numberOfDice == 0 ? `${bluffer.username} is out!` : `${bluffer.username} loses a die!`}`
+      loser = bluffer;
     }
-    console.log(`====== room users =====`)
-    console.log(room.users)
-    console.log(`===== all users ======`)
-    console.log(users)
+    if(loser.numberOfDice == 0){
+      room.currentTurn = nextTurn(room);
+    }
+
     io.to(room.id).emit('callBluff', room, bluffer, caller, message);
-    // Broadcast outcome to everyone, reveal their dice
+
+    if(loser.numberOfDice == 0){
+      socket.to(loser.id).emit('playerOut');
+    }
   })
   socket.on('nextRound', () => {
     let room = rooms[users[socket.id].currentRoom];
+    console.log(`======= current turn ======`);
+    console.log(room.currentTurn);
     let startingPlayer = room.users[Object.keys(room.users)[room.currentTurn]];
+    console.log(`${room.id}: nextRound`);
     room.dice = {};
     room.currentBet = {
       username: undefined,
@@ -233,6 +233,38 @@ io.on('connection', (socket) => {
       value: 1
     }
     io.to(room.id).emit('nextRound', startingPlayer);
+  })
+  socket.on('kickMe', () => {
+    let room = rooms[users[socket.id].currentRoom];
+
+    console.log(`${room.id}: ${room.users[socket.id].username}: kickMe`)
+
+    const reassignNumber = (user) => {
+      let arr = Object.keys(room.users)
+      let number;
+      arr.forEach(id => {
+        if(user === id){
+          number = arr.indexOf(id);
+        }
+      })
+      return number;
+    }
+
+    // let startingPlayer = room.users[Object.keys(room.users)[room.currentTurn]];
+    // socket.leave(room);
+    delete room.users[socket.id]
+    delete users[socket.id]
+    // reassign player turn numbers
+    for(user in room.users){
+      room.users[user].number = reassignNumber(user);
+    }
+    room.currentTurn = previousTurn(room);
+    console.log(`======= new user numbers =======`);
+    console.log(room.users);
+
+    if(Object.keys(room.users).length == 1){
+      io.to(room.id).emit('winner', room.users)
+    }
   })
 });
 
