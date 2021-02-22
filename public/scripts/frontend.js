@@ -36,6 +36,11 @@ const
       myDice = document.body.querySelector('#myDice'),
       otherDice = document.body.querySelector('#otherDice'),
       betDisplay = document.body.querySelector('#betDisplay');
+      sampleDie = document.body.querySelector('#sampleDie');
+      sampleDieFace = document.body.querySelector('#sampleDieFace');
+      hudDisplay = document.body.querySelector('#HUD'),
+      roomDisplay = document.body.querySelector('#roomDisplay'),
+      nameDisplay = document.body.querySelector('#nameDisplay');
 
 //   GameState stuff
 
@@ -52,29 +57,39 @@ dicePerPlayerField.addEventListener('change', function(){
 
 // Functions:
 
-const dieFaces = (user) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-1" viewBox="0 0 16 16">
+const dieFaces = (user) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-1" viewBox="0 0 16 16">
 <circle cx="8" cy="8" r="1.5"/></svg>`,
-2: `<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-2" viewBox="0 0 16 16">
+2: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-2" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-3:`<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-3" viewBox="0 0 16 16">
+3:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-3" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-4: `<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-4" viewBox="0 0 16 16">
+4: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-4" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-5: `<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-5" viewBox="0 0 16 16">
+5: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-5" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-6:`<svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" fill="${user.numberColor}" class="bi bi-dice-6" viewBox="0 0 16 16">
+6:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-6" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`}}
 
+const updateDieColor = () => {
+    let color = userColor.value;
+    sampleDie.style.backgroundColor = color;
+}
+const updateNumberColor = () => {
+    let color = fontColor.value;
+    sampleDieFace.setAttribute('fill', color);
+}
 
 const randomColor = () => {
     const color = () => {return Math.floor(Math.random()*16777215).toString(16).padStart(6, 'f')}
     userColor.value = `#${color()}`
     fontColor.value = `#${color()}`
+    updateDieColor();
+    updateNumberColor();
 }
 
 const generateRoomID = () => {
@@ -120,15 +135,10 @@ const startGame = () => {
     betDisplay.classList.remove('d-none');
     playersList.classList.add('d-none');
 } 
-const HUD = (username, id) => {
-    socket.id = id;
-    const roomCode = `<span id='roomcode'>Room Code: <b>${roomID}</b></span>`
-    const nameDisplay = `<span id='nameDisplay'>Username: <b>${username}</b></span>`
-    const roomSpan = document.createElement('span');
-    roomSpan.innerHTML = roomCode;
-    const nameSpan = document.createElement('span');
-    nameSpan.innerHTML = nameDisplay;
-    document.body.prepend(roomSpan, nameSpan);
+const HUD = (username) => {
+    hudDisplay.classList.remove('d-none');
+    roomDisplay.innerHTML = `<b>Room:</b> ${roomID}`;
+    nameDisplay.innerHTML = `<b>Username:</b> ${username}`;
 }
 class Die {
     constructor(user){
@@ -283,8 +293,8 @@ form.addEventListener('submit', e => {
 //====== Receiving broadcast events ================
 
 
-socket.on('HUD', (username, id) => {
-    HUD(username, id);
+socket.on('HUD', (username) => {
+    HUD(username);
 });
 socket.on('startGame', () => {
     startGame()
@@ -386,3 +396,5 @@ raiseButton.addEventListener('click', emitClickedRaise)
 callButton.addEventListener('click', emitCallBluff)
 randomizeButton.addEventListener('click', randomColor)
 nextRoundButton.addEventListener('click', emitNextRound);
+fontColor.addEventListener('change', updateNumberColor)
+userColor.addEventListener('change', updateDieColor)

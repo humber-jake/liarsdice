@@ -10,8 +10,9 @@ body{
     float:left;
 }
 .dice{
-    width: 3rem;
-    height: 3rem;
+    display: inline-block;
+    width: 9vh;
+    height: 9vh;
     border-radius: 0.65em;
     margin: 2px;
     
@@ -24,8 +25,85 @@ body{
                 inset 0.2em -0.2em 0.2em #33333355, 
                 inset -0.1em 0.2em 0.3em #00000033; */
 }
+
+label{
+    color: #b3b3b3;
+}
+
+.btn{
+    /* display: block; */
+    margin: 0.25rem;
+    min-width: 280px;
+}
 .dieFace svg{
     align-self: center;
-    width: inherit;
-    height: inherit;
+    width: 9vh;
+    height: 9vh;
+}
+.roomInput{
+    margin: 1rem auto;
+    max-width: 420px;
+}
+.colorInput{
+    height: 10vh;
+}
+#sampleDie{
+    width: 24vh;
+    height: 24vh;
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: 1.25em;
+    margin-bottom: 4vh;
+    
+    box-shadow: inset 0.6em 0.6em 0.2em #bbbbbb55,
+                      0.1em 0.2em 0.2em #333333cc, 
+                inset 0em -0.2em 0.4em #33333355; 
+   
+    /* box-shadow: inset 0.2em 0.4em 0.1em #bbbbbb55, 
+                0.05em 0.05em 0.05em #333333ff, 
+                inset 0.2em -0.2em 0.2em #33333355, 
+                inset -0.1em 0.2em 0.3em #00000033; */
+}
+#sampleDieFace{
+    max-width: 230px;
+    max-height: 230px;
+}
+#HUD{
+    height: 25px;
+}
+#playersList{
+    margin-top: 8vh auto;
+}
+#setupUI{
+    padding: 8vh 0;
+}
+#roomUI{
+    margin-top: 20px;
+}
+#dicePerPlayer{
+    margin-bottom: 40px;
+}
+#roomDisplay{
+    float:left;
+}
+#nameDisplay{
+    float:right;
+}
+
+form .form-floating input{
+    max-width: 420px;
+}
+input[type="color"] {
+	-webkit-appearance: none;
+	border: none;
+	width: 0px;
+	height: 0px;
+    opacity: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+	padding: 0;
+    border: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+	border: none;
 }

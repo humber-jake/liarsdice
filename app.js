@@ -111,7 +111,7 @@ io.on('connection', (socket) => {
     console.log(rooms)
 
     // display username and room code
-    socket.emit('HUD', username, socket.id);
+    socket.emit('HUD', username);
     io.to(rooms[roomID].id).emit('playerJoined', users);
 
     // on disconnect, remove user from users object and room
