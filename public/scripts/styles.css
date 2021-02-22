@@ -1,59 +1,89 @@
-body{
-    height: 100%;
+:root {
+    --primary-color: #24b951;
+    --primary-light: #61da85;
+    --primary-dark: #128836;
+    --secondary-color: #43a0d6;
+}
+
+.d-none{
+    display:none;
+}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+html, body{
     text-align: center;
-    margin: 2%;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100%;
+}
+body{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.content{
+    max-height: 528px;
+    height: 100%;
+    width: 100%;
+    justify-content: flex-start;
+} 
+.content .container form{
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+.container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 528px;
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    overflow: none;
+}
+#HUD{
+    height: 40px;
+    width: 100%;
+    background-color: var(--primary-color);
+}
+#HUD .container{
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: space-between;
+}
+#HUD .container span{
+    display: flex;
+    flex-direction: column;
+}
+#HUD .container span p{
+    font-size: .75rem;
+}
+#roomDisplay{
+    float:left;
 }
 #nameDisplay{
     float:right;
 }
-#roomcode{
-    float:left;
-}
-.dice{
-    display: inline-block;
-    width: 9vh;
-    height: 9vh;
-    border-radius: 0.65em;
-    margin: 2px;
-    
-    box-shadow: inset 0.3em 0.3em 0.1em #bbbbbb55,
-                      0.05em 0.1em 0.1em #333333cc, 
-                inset 0em -0.1em 0.2em #33333355; 
-   
-    /* box-shadow: inset 0.2em 0.4em 0.1em #bbbbbb55, 
-                0.05em 0.05em 0.05em #333333ff, 
-                inset 0.2em -0.2em 0.2em #33333355, 
-                inset -0.1em 0.2em 0.3em #00000033; */
-}
-
-label{
-    color: #b3b3b3;
-}
-
-.btn{
-    /* display: block; */
-    margin: 0.25rem;
-    min-width: 280px;
-}
-.dieFace svg{
-    align-self: center;
-    width: 9vh;
-    height: 9vh;
-}
-.roomInput{
-    margin: 1rem auto;
-    max-width: 420px;
-}
-.colorInput{
-    height: 10vh;
+#roomUI{
+    height: 100%;
 }
 #sampleDie{
+    display: block;
+    margin: 20px;
     width: 24vh;
     height: 24vh;
     max-width: 220px;
     max-height: 220px;
     border-radius: 1.25em;
-    margin-bottom: 4vh;
     
     box-shadow: inset 0.6em 0.6em 0.2em #bbbbbb55,
                       0.1em 0.2em 0.2em #333333cc, 
@@ -68,42 +98,158 @@ label{
     max-width: 230px;
     max-height: 230px;
 }
-#HUD{
-    height: 25px;
-}
-#playersList{
-    margin-top: 8vh auto;
+.roomInput{
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px;
 }
 #setupUI{
-    padding: 8vh 0;
+    height: 30%;
 }
-#roomUI{
-    margin-top: 20px;
-}
-#dicePerPlayer{
-    margin-bottom: 40px;
-}
-#roomDisplay{
-    float:left;
-}
-#nameDisplay{
-    float:right;
+#setupUI div{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
 }
 
-form .form-floating input{
-    max-width: 420px;
+#playersList{
+    margin-top: 15px;
+    height: 70%;
 }
-input[type="color"] {
+#playersList h2{
+    color: var(--primary-color);
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 2.5rem;
+}
+#playersList h4{
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+#rollUI{
+    width: 100%;
+}
+#callUI{
+    width: 100%;
+}
+#callUI div{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+
+}
+#betUI{
+    width: 100%;
+}
+#betUI div{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+#betUI div div{
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+#betUI div select{
+    margin: 10px;
+    padding: 5px;
+    border: 1px solid #dadada;
+    background-color: #dadada;
+    border-radius: 7px;
+    text-align: center; 
+}
+#betDisplay{
+
+}
+#warningUI{
+    
+}
+#otherDice{
+
+}
+.dice{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 9vh;
+    height: 9vh;
+    border-radius: 0.65em;
+    margin: 2px;
+    
+    box-shadow: inset 0.3em 0.3em 0.1em #bbbbbb55,
+                      0.05em 0.1em 0.1em #333333cc, 
+                inset 0em -0.1em 0.2em #33333355; 
+   
+    /* box-shadow: inset 0.2em 0.4em 0.1em #bbbbbb55, 
+                0.05em 0.05em 0.05em #333333ff, 
+                inset 0.2em -0.2em 0.2em #33333355, 
+                inset -0.1em 0.2em 0.3em #00000033; */
+}
+.dieFace {
+    width: 9vh;
+    height: 9vh;
+}
+
+button {
+    width: 80%;
+    margin: 5px 2px 5px 2px;
+    display: inline-block;
+    font-size: 1em;
+    padding: 10px;
+    border: 0;
+    /* border: 1px solid #dadada; */
+    border-radius: 10px;
+    background-color: var(--primary-color);
+    transition-property: opacity, box-shadow;
+    transition-duration: 200ms;
+}
+button:hover{
+    opacity: 80%;
+    box-shadow: 0px 0px 5px #b3b3b3;
+}
+input[type=text]{
+    margin: 10px 0 10px 0;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 10px;
+    border: 1px solid #dadada;
+    box-shadow: 0px 3px 3px #b3b3b3;
+    outline-style: none;
+}
+input[type='color'] {
 	-webkit-appearance: none;
 	border: none;
 	width: 0px;
 	height: 0px;
     opacity: 0;
 }
-input[type="color"]::-webkit-color-swatch-wrapper {
-	padding: 0;
-    border: 0;
+input[type='number']{
+    margin: 10px;
+    padding: 5px;
+    border: 1px solid #dadada;
+    border-radius: 7px;
+    text-align: center;
 }
-input[type="color"]::-webkit-color-swatch {
-	border: none;
+@media screen and (max-width: 290px){
+    .dice{
+        width: 44px;
+        height: 44px;
+    }
+    .dieFace {
+        width: 44px;
+        height: 44px;
+    }
+    .dice svg{
+        width: 44px;
+        height: 44px;
+    }
 }

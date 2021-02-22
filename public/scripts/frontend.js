@@ -132,13 +132,12 @@ const startGame = () => {
     setupUI.classList.add('d-none');
     diceCup.classList.remove('d-none');
     rollUI.classList.remove('d-none');
-    betDisplay.classList.remove('d-none');
     playersList.classList.add('d-none');
 } 
 const HUD = (username) => {
     hudDisplay.classList.remove('d-none');
-    roomDisplay.innerHTML = `<b>Room:</b> ${roomID}`;
-    nameDisplay.innerHTML = `<b>Username:</b> ${username}`;
+    roomDisplay.innerHTML += `<b>${roomID}</b> `;
+    nameDisplay.innerHTML += `<b>${username}</b> `;
 }
 class Die {
     constructor(user){
@@ -165,6 +164,7 @@ const rollDice = (user, users, room) => {
     rollUI.classList.add('d-none');
     checkTurn(room);
     socket.emit('roundStart');
+    warningUI.classList.remove('d-none');
     if (isYourTurn === true){
         warningUI.innerText = `It's your turn!`
     } else {
@@ -183,21 +183,24 @@ const roundStart = (room) => {
     return allDice === diceRolled;
 }
 const nextRound = (startingPlayer) => {
+    betDisplay.classList.add('d-none');
     betDisplay.innerHTML = '';
     warningUI.innerHTML = '';
+    warningUI.classList.add('d-none');
     myDice.innerHTML = '';
     otherDice.innerHTML = '';
+    otherDice.classList.add('d-none');
     diceCup.firstElementChild.innerHTML = `${!isOut ? `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.` : `<br> It's ${startingPlayer.username}'s turn.`}`;
     rollUI.classList.remove('d-none');
 }
 
 const displayDice = (dice, users) => {
+    otherDice.classList.remove('d-none');
     otherDice.innerHTML = '';
     for(hand in dice){
         const faces = dieFaces(users[hand]);
         if(socket.id !== hand){
             const diceRow = document.createElement('div');
-            diceRow.classList.add('row', 'justify-content-center');
             for(die in dice[hand]){
                 // console.log(dice[hand][die].user.numberColor)
                 const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color}'>
@@ -222,6 +225,7 @@ const callBluff = (room, bluffer, caller, message) => {
             el.classList.remove('d-none');
         }
     }
+    warningUI.classList.remove('d-none');
     warningUI.innerHTML = `<p>${message}</p>`;
     revealDice();
     isYourTurn = false;
@@ -232,6 +236,7 @@ const callBluff = (room, bluffer, caller, message) => {
 }
 const playerOut = () => {
     isOut = true;
+    warningUI.classList.remove('d-none');
     warningUI.innerHTML += `<h2>Oh no! You're out.</h2>`
     socket.emit('kickMe')
     rollUI.innerHTML = '';
@@ -252,6 +257,7 @@ const makeBet = (room) => {
             value: betValue.value
         }
        } else {
+        warningUI.classList.remove('d-none');
         warningUI.innerHTML = '<p>Please place a bet higher than the previous one.</p>';
         return false;
     }
@@ -261,6 +267,7 @@ const winner = users => {
     callUI.innerHTML = '';
     betUI.innerHTML = '';
     nextRoundButton.classList.add('d-none');
+    warningUI.classList.remove('d-none');
     if(socket.id == Object.keys(users)[0]){
         warningUI.innerHTML = `<h2>You win!</h2>`
     } else {
@@ -317,11 +324,14 @@ socket.on('rollDice', (user, users, room) => {
 socket.on('roundStart', (room) => {
     let ready = roundStart(room);
     if(!ready){
+        warningUI.classList.remove('d-none');
         warningUI.innerText = `Still waiting on players.`
     } else if (ready && !isYourTurn){
+        warningUI.classList.remove('d-none');
         warningUI.innerText = `It's ${room.users[Object.keys(room.users)[room.currentTurn]].username}'s turn!`
     }
     if(ready && isYourTurn){
+        warningUI.classList.add('d-none');
         warningUI.innerText = '';
         betUI.classList.remove('d-none');
         calculateQuantity(room);
@@ -335,6 +345,8 @@ socket.on('makeBet', (room) => {
 })
 socket.on('updateBet', (room) => {
     warningUI.innerText = '';
+    warningUI.classList.add('d-none');
+    betDisplay.classList.remove('d-none');
     updateBetDisplay(room);
     checkTurn(room);
     if(isYourTurn){

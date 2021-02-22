@@ -6,129 +6,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liar's Dice</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
     <link rel="stylesheet" type="text/css" href="/public/scripts/styles.css">
 </head>
 <body>
     <div class="d-none" id="HUD">
-        <span id="roomDisplay"></span>
-        <span id="nameDisplay"></span>
+        <div class="container">
+            <span id="roomDisplay"><p>ROOM CODE:</p></span>
+            <span id="nameDisplay"><p>USERNAME:</p></span>
+        </div>
     </div>
 
-    <div class="container">
-        <div class="" id="roomUI">
-            <form id="form">
-                <div class="form-floating roomInput">
-                    <input class=" form-control" type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
-                    <label class="" for="username">Username</label>
-                </div>
-                <div class="form-floating roomInput">
-                    <input class="form-control" type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code (optional)" autocapitalize="characters">
-                    <label for="input">Room Code (optional)</label>
-                </div>
+    <div class="content">
 
-                <div class="d-inline-flex">
-                    <span id="sampleDie" class="sampleDice">
+        
+        
+        <div class="container">
+            <div id="roomUI" class="">
+                <form id="form">
+                    <div class="roomInput">
+                        <input class="" type="text" id="username" autocomplete='off' maxlength="15" placeholder="Username" required>
+                        <input class="" type="text" id="input" autocomplete="off" maxlength="4" minlength="4" placeholder="Room Code (optional)" autocapitalize="characters">
+                    </div>
+                
+                    <span id="sampleDie">
                         <span>
                             <svg id="sampleDieFace" xmlns="http://www.w3.org/2000/svg" width="25vh" height="25vh" fill="black" class="bi bi-dice-5" viewBox="0 0 16 16">
                                 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                        </svg>
+                            </svg>
                         </span> 
                     </span>
-                </div>
-                    <div class="row flex-column">
-                        <label class="col-8 align-self-center btn btn-lg btn-outline-dark" for="numberColor">Change Dot Color</label>
-                        <input class="" type="color" id="numberColor" value="#000000">
-                    </div>
 
-                    <div class="row flex-column">
-                        <label class="col-8 align-self-center btn btn-lg btn-dark" for="userColor">Change Die Color</label>
+                    <div class="roomInput">
+                        <button class="" type="button"><label class="" for="numberColor">Change Dot Color</label></button>
+                        <button class="" type="button"><label class="" for="userColor">Change Die Color</label></button>
+                        <button class="" type="button" id="randomizeButton">Randomize Colors</button>
+                        <button class="" type="submit" id="submitButton">Create / Join Room</button>
+                        <input class="" type="color" id="numberColor" name="numberColor" value="#000000">
                         <input class="" type="color" id="userColor" value="#ffffee">   
                     </div>
+                </form>
+            </div>
 
-                    <div class="row flex-column">
-                        <button class="col-8 align-self-center btn btn-lg btn-primary" type="button" id="randomizeButton">Randomize Colors</button>
-                    </div>
+            <div id="setupUI" class="d-none">
+                <div>
+                    <h2>How many dice per player?</h2>
+                    <input type="number" id="dicePerPlayer" min="1" max="8" value="5">
+                    <button class="" type="submit" id="startButton">Start Game</button>
+                </div>
+            </div>
 
-                    <div class="row flex-column">
-                        <input class="col-8 align-self-center btn btn-lg btn-success" type="submit" id="submitButton" value="Create / Join Room">
-                    </div>  
-                 
+            <div class="d-none" id="playersList">
+                <h2>Players:</h2>
+            </div>
 
-            </form>
-
-        </div>
-        <div class="d-none" id="playersList">
-            <h2>Players:</h2>
-        </div>
-        <div id="setupUI" class="d-none">
-            <div class="m-2">
-                <h2>How many dice per player?</h2>
-                <input type="number" id="dicePerPlayer" min="1" max="8" value="5">
-            </div>
-            <div class="row flex-column">
-                <button class="col-8 align-self-center btn btn-lg btn-success" type="submit" id="startButton">Start Game</button>
-            </div>
-        </div>
-    
-        <div id="gameUI" class="align-items-center">
-    
-            <div id="diceCup" class="d-none m-2">
-                <p>This is where your dice will go.</p>
-                <div id="myDice" class=""></div>
-            <!-- add div with id dice here for each value of dice per player -->
-            </div>
-    
-            <div id="rollUI" class="d-none">
-                <button class=" btn btn-primary" id="rollAllDice">Roll Dice!</button>
-            </div>
-    
-            <div id="callUI" class="d-none">
-                <button class=" btn btn-primary" id="callButton">Call Bluff</button>
-                <button class=" btn btn-primary" id="raiseButton">Raise</button>
-            </div>
-    
-            <div id="betUI" class="d-none">
-                <div class="d-inline-flex">
-                    <div class="mx-2">
-                        <h2>Quantity</h2>
-                        <!-- <input type="number" id="betQuantity"> -->
-                        <select name="" id="betQuantity">
+            <!-- <div id="gameUI" class=""> -->
         
-                        </select>
-                    </div>
-                    <div class="mx-2">
-                        <h2>Number</h2>
-                        <!-- <input type="number" id="faceValue" min="1" max="6"> -->
-                        <select name="" id="betValue">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
+                <div id="diceCup" class="d-none">
+                        <p>This is where your dice will go.</p>
+                        <div id="myDice" class=""></div>
+                </div>
+        
+                <div id="rollUI" class="d-none">
+                    <div>
+                        <button class="" id="rollAllDice">Roll Dice!</button>
                     </div>
                 </div>
-                <div class="row flex-column">
-                    <button class="col-4 align-self-center m-2 btn btn-primary" id="makeBet">Make Bet</button>
+        
+                <div id="callUI" class="d-none">
+                    <div>
+                        <button class="" id="callButton">Call Bluff</button>
+                        <button class="" id="raiseButton">Raise</button>
+                    </div>
                 </div>
-              
-            </div>
+        
+                <div id="betUI" class="d-none">
+                    <div class="">
+                        <div class="">
+                            <h2>Quantity</h2>
+                            <!-- <input type="number" id="betQuantity"> -->
+                            <select name="" id="betQuantity">
+            
+                            </select>
+                        </div>
+                        <div class="">
+                            <h2>Number</h2>
+                            <!-- <input type="number" id="faceValue" min="1" max="6"> -->
+                            <select name="" id="betValue">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="">
+                        <button class="" id="makeBet">Make Bet</button>
+                    </div>
+                </div>
 
-            <div class="m-2 d-none" id="betDisplay"></div>
+                <div id="betDisplay" class="d-none"></div>
 
-            <div id="warningUI" class=""></div>
+                <div id="warningUI" class="d-none"></div>
 
-            <div id="otherDice" class=""></div>
+                <div id="otherDice" class="d-none"></div>
 
-            <button id="nextRound" class="btn btn-lg btn-success d-none">Start Next Round</button>
+                <button id="nextRound" class="d-none">Start Next Round</button>
 
-            <button id="playAgain" class="btn btn-lg btn-success d-none" onclick="location.href=''" type="button">Play Again?</button>
+                <button id="playAgain" class="d-none" onclick="location.href=''" type="button">Play Again?</button>
 
+            <!-- </div> -->
         </div>
     </div>
+    
 
     <script src="node_modules/socket.io/client-dist/socket.io.js"></script>
     <script src="/public/scripts/frontend.js"></script>
