@@ -41,6 +41,7 @@ const
       hudDisplay = document.body.querySelector('#HUD'),
       roomDisplay = document.body.querySelector('#roomDisplay'),
       nameDisplay = document.body.querySelector('#nameDisplay');
+      rangeValue = document.body.querySelector('#rangeValue');
 
 //   GameState stuff
 
@@ -50,31 +51,36 @@ let isYourTurn = false;
 let roomID = undefined;
 let isBetOkay = false;
 let isOut = false;
+let dieWidth = '44px';
 
-dicePerPlayerField.addEventListener('change', function(){
+dicePerPlayerField.addEventListener('input', function(){
+    updateRangeValue();
     dicePerPlayer = parseInt(this.value);
 })
 
 // Functions:
 
-const dieFaces = (user) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-1" viewBox="0 0 16 16">
+const dieFaces = (user, dieWidth) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-1" viewBox="0 0 16 16">
 <circle cx="8" cy="8" r="1.5"/></svg>`,
-2: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-2" viewBox="0 0 16 16">
+2: `<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-2" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-3:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-3" viewBox="0 0 16 16">
+3:`<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-3" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-4: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-4" viewBox="0 0 16 16">
+4: `<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-4" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-5: `<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-5" viewBox="0 0 16 16">
+5: `<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-5" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm4-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`,
-6:`<svg xmlns="http://www.w3.org/2000/svg" width="9vh" height="9vh" fill="${user.numberColor}" class="bi bi-dice-6" viewBox="0 0 16 16">
+6:`<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-6" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`}}
 
+const updateRangeValue = () => {
+    rangeValue.innerText = dicePerPlayerField.value;
+}
 const updateDieColor = () => {
     let color = userColor.value;
     sampleDie.style.backgroundColor = color;
@@ -90,6 +96,13 @@ const randomColor = () => {
     fontColor.value = `#${color()}`
     updateDieColor();
     updateNumberColor();
+}
+
+const getDieWidth = () => {
+    const container = document.body.querySelector('.content').querySelector('.container');
+    let dieWidth;
+    dieWidth = (container.scrollWidth - 22 - (2 * dicePerPlayer)) / dicePerPlayer +'px';
+    return dieWidth;
 }
 
 const generateRoomID = () => {
@@ -128,7 +141,8 @@ const calculateQuantity = (room) => {
         betQuantity.append(newOption);
     }
 }
-const startGame = () => {
+const startGame = (diceAmount) => {
+    dicePerPlayer = diceAmount;
     setupUI.classList.add('d-none');
     diceCup.classList.remove('d-none');
     rollUI.classList.remove('d-none');
@@ -147,6 +161,7 @@ class Die {
     }
 }
 const rollDice = (user, users, room) => {
+    dieWidth = getDieWidth();
     diceCup.firstElementChild.innerHTML = '';
     const hand = {};
     for(i = 0; i < user.numberOfDice; i++){
@@ -154,8 +169,8 @@ const rollDice = (user, users, room) => {
         hand[i] = die;
     }
     for(die in hand){
-        const dieHTML = ` <span class='dice' style='background-color:${hand[die].color}'>
-                            <span class='dieFace'>${dieFaces(user)[hand[die].value]}</span>
+        const dieHTML = ` <span class='dice' style='background-color:${hand[die].color};width:${dieWidth};height:${dieWidth}'>
+                            <span class='dieFace' style='width:${dieWidth};height:${dieWidth}'>${dieFaces(user, dieWidth)[hand[die].value]}</span>
                           </span>`
        
         myDice.innerHTML += dieHTML;
@@ -198,14 +213,14 @@ const displayDice = (dice, users) => {
     otherDice.classList.remove('d-none');
     otherDice.innerHTML = '';
     for(hand in dice){
-        const faces = dieFaces(users[hand]);
+        const faces = dieFaces(users[hand], dieWidth);
         if(socket.id !== hand){
             const diceRow = document.createElement('div');
             for(die in dice[hand]){
                 // console.log(dice[hand][die].user.numberColor)
-                const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color}'>
+                const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color};width:${dieWidth};height:${dieWidth}'>
                                     <p class='qmark' style='color:${dice[hand][die].user.numberColor};font-size:2em;'>?<p>
-                                    <span class='dieFace d-none'>${faces[dice[hand][die].value]}</span>
+                                    <span class='dieFace d-none' style='width:${dieWidth};height:${dieWidth}'>${faces[dice[hand][die].value]}</span>
                                   </span>`
                 diceRow.innerHTML += dieHTML;
             }
@@ -303,8 +318,8 @@ form.addEventListener('submit', e => {
 socket.on('HUD', (username) => {
     HUD(username);
 });
-socket.on('startGame', () => {
-    startGame()
+socket.on('startGame', (diceAmount) => {
+    startGame(diceAmount)
 });
 socket.on('addingDice', (dice, users) => {
     displayDice(dice, users);

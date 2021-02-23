@@ -139,7 +139,7 @@ io.on('connection', (socket) => {
     // Pick random player number for currentTurn
     room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length);
     console.log(`${room.id}: startGame`);
-    io.to(room.id).emit('startGame');
+    io.to(room.id).emit('startGame', diceAmount);
     console.log('==============')
     console.log('USERS')
     console.log('==============')
