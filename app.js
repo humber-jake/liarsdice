@@ -274,3 +274,9 @@ io.on('connection', (socket) => {
 http.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
+
+
+  // TODO:
+  // implement cookies / sessions 
+  // newPlayer - add new player to the game in between rounds no matter when they connect
+  //  let host skip players that are idle or away
