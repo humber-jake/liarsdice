@@ -220,7 +220,7 @@ io.on('connection', (socket) => {
 
     if(loser.numberOfDice == 0){
       console.log(`${room.id}: ${loser.username}: playerOut`)
-      socket.emit('playerOut');
+      io.to(loser.id).emit('playerOut');
     }
   })
   socket.on('nextRound', () => {
