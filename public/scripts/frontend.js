@@ -205,7 +205,7 @@ const nextRound = (startingPlayer) => {
     myDice.innerHTML = '';
     otherDice.innerHTML = '';
     otherDice.classList.add('d-none');
-    diceCup.firstElementChild.innerHTML = `${!isOut ? `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.` : `<br> It's ${startingPlayer.username}'s turn.`}`;
+    diceCup.firstElementChild.innerHTML = `${!isOut ? `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.` : ``}`;
     rollUI.classList.remove('d-none');
 }
 
@@ -380,6 +380,7 @@ socket.on('nextRound', (startingPlayer) => {
     nextRound(startingPlayer);
 })
 socket.on('playerOut', () => {
+    console.log(`Oh no, I'm out!`);
     playerOut();
 })
 socket.on('winner', users => {

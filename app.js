@@ -206,7 +206,9 @@ io.on('connection', (socket) => {
       loser = caller;
     } else {
       bluffer.numberOfDice--;
+      if(bluffer.numberOfDice != 0){
       room.currentTurn = bluffer.number;
+      }
       message = `${bluffer.username} was indeed bluffing. ${bluffer.numberOfDice == 0 ? `${bluffer.username} is out!` : `${bluffer.username} loses a die!`}`
       loser = bluffer;
     }
@@ -217,7 +219,8 @@ io.on('connection', (socket) => {
     io.to(room.id).emit('callBluff', room, bluffer, caller, message);
 
     if(loser.numberOfDice == 0){
-      socket.to(loser.id).emit('playerOut');
+      console.log(`${room.id}: ${loser.username}: playerOut`)
+      socket.emit('playerOut');
     }
   })
   socket.on('nextRound', () => {
