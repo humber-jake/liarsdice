@@ -5,14 +5,14 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
-function isObjectEmpty(obj) {
-  return Object.keys(obj).length === 0;
-}
-
 
 let users = {};
     rooms = {};
 
+
+const isObjectEmpty = (obj) => {
+  return Object.keys(obj).length === 0;
+}
 const nextTurn = (room) => {
   let result = (room.currentTurn + 1)% Object.keys(room.users).length
   return result
@@ -46,9 +46,9 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-
   console.log(`The user ${socket.id} connected`);
-  socket.on('join or create room', (roomID, username, diceColor, numberColor) => {
+
+  socket.on('login', (roomID, username, diceColor, numberColor) => {
 
     class User {
       constructor(username, roomID, diceColor, numberColor){
