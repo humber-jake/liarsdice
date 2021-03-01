@@ -116,6 +116,8 @@ const generateRoomID = () => {
 
 const updateBetDisplay = (room) => {
         betDisplay.innerText = `${room.currentBet.username} bet ${room.currentBet.quantity} ${room.currentBet.value}${room.currentBet.quantity == 1 ? '.' : 's.'}`;
+        warningUI.classList.remove('d-none');
+        warningUI.innerHTML = `<p>It's ${room.users[Object.keys(room.users)[room.currentTurn]].username}'s turn.</p>`
 }
 const checkTurn = (room) => {
     if(isOut){
@@ -302,7 +304,7 @@ form.addEventListener('submit', e => {
     } else {
         roomID = generateRoomID();
     }
-    socket.emit('join or create room', roomID, username, diceColor, numberColor);
+    socket.emit('login', roomID, username, diceColor, numberColor);
     socket.on('isHost', (user) => {
         if(user.isHost === true)
         setupUI.classList.remove('d-none');
@@ -359,7 +361,7 @@ socket.on('makeBet', (room) => {
     }
 })
 socket.on('updateBet', (room) => {
-    warningUI.innerText = '';
+    warningUI.innerHTML = '';
     warningUI.classList.add('d-none');
     betDisplay.classList.remove('d-none');
     updateBetDisplay(room);
