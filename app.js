@@ -6,9 +6,8 @@ const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
 
-let users = {};
+let users = {},
     rooms = {};
-
 
 const isObjectEmpty = (obj) => {
   return Object.keys(obj).length === 0;
@@ -36,8 +35,18 @@ const getBluffer = (room) => {
   }
   return bluffer;
 }
-
-    
+const deleteExpired = () => {
+  for(user in users){
+    if(users[user].expiration != null && users[user].expiration < new Date()){
+        delete users[user];
+        for(room in rooms){
+          delete rooms[room].users[user];
+        }
+    }
+  }
+}
+// on reconnect, getState - getState emits reconnect to everyone but socket,
+// 
 
 app.use(express.static(__dirname))
 
@@ -45,87 +54,140 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+// setInterval( () => {
+//   console.log(`Checking for expired users...`)
+//   if(Object.keys(users).length > 0){
+//     console.log(`Currently ${Object.keys(users).length} users. Deleting expired users...`)
+//     console.log(`===========rooms========`)
+//     console.log(rooms)
+//     console.log(`========users==========`)
+//     console.log(users)
+//     deleteExpired();
+//   }
+// }, 5000);
+
 io.on('connection', (socket) => {
-  console.log(`The user ${socket.id} connected`);
+  // socket.emit('getStorage');
+
+  // socket.on('setID', id => {
+  //   socket.id = id;
+    console.log(`The user ${socket.id} connected`);
+  // })
+
+  class User {
+    constructor(username, roomID, diceColor, numberColor){
+      this.username = username,
+      this.id = socket.id,
+      this.number = 0;
+      this.currentRoom = roomID;
+      this.isHost = false;
+      this.numberOfDice = 5;
+      this.color = diceColor;
+      this.numberColor = numberColor;
+      this.expiration = null;
+    }
+  }
+  
+  class Room {
+    constructor(roomID){
+      this.id = roomID;
+      this.users = {};
+      this.dice = {};
+      this.currentBet = {
+        username: undefined,
+        quantity: 0,
+        value: 1
+      }
+    }
+  }
 
   socket.on('login', (roomID, username, diceColor, numberColor) => {
-
-    class User {
-      constructor(username, roomID, diceColor, numberColor){
-        this.username = username,
-        this.id = socket.id,
-        this.number = 0;
-        this.currentRoom = roomID;
-        this.isHost = false;
-        this.numberOfDice = 5;
-        this.color = diceColor;
-        this.numberColor = numberColor;
-      }
+    console.log(`${roomID}: ${socket.id}: ${username}: login`);
+    if(users[socket.id] != undefined && roomID == rooms[roomID].id){
+      socket.join(roomID)
+      // socket.emit('reconnect', state)
+      // 
     }
-
-    class Room {
-      constructor(roomID){
-        this.id = roomID;
-        this.users = {};
-        this.dice = {};
-        this.currentBet = {
-          username: undefined,
-          quantity: 0,
-          value: 1
-        }
+    // if user doesn't exist:
+    if(users[socket.id] == undefined){
+      // on connect, create USER for socket
+      const newUser = new User(username, roomID, diceColor, numberColor);
+      console.log(newUser.currentRoom);
+      // Check for room code, create if room doesn't exist
+      if(rooms[newUser.currentRoom] == undefined){
+        const newRoom = new Room(roomID);
+        // Because user made room, make host
+        newUser.isHost = true;
+        socket.emit('isHost', newUser);
+        // add user to newRoom, newRoom to rooms object, and join room
+        newRoom.users[socket.id] = newUser;
+        rooms[roomID] = newRoom;
+      } else {
+        console.log(`created user and joined pre-existing room!`)
+        // add user to object and join room
+        rooms[roomID].users[newUser.id] = newUser;
       }
-    }
 
-    // on connect, create USER for socket
-    const newUser = new User(username, roomID, diceColor, numberColor);
+      // Set user turn number
+      newUser.number = Object.keys(rooms[roomID].users).length - 1;
 
-    // Check for room code, create if room doesn't exist
-    if(!rooms[newUser.currentRoom]){
-      const newRoom = new Room(roomID);
-      // Because user made room, make host
-      newUser.isHost = true;
-      socket.emit('isHost', newUser);
-      // add user to room.users object
-      newRoom.users[socket.id] = newUser;
-      // add new room to rooms object
-      rooms[roomID] = newRoom;
-      // user joins room socket
-     
-      socket.join(newUser.currentRoom);
+      // add user to users object, server console rooms and users
+      users[socket.id] = newUser;
+
+      console.log('==============')
+      console.log('ROOMS')
+      console.log('==============')
+      console.log(rooms)
+
+      // display username and room code
+      socket.emit('HUD', username);
+      socket.join(roomID)
+      io.to(roomID).emit('playerJoined', rooms[roomID].users);
     } else {
-      // add user to specified room object
-      rooms[newUser.currentRoom].users[newUser.id] = newUser;
-      // user joins room socket
-      socket.join(newUser.currentRoom);
-    }
+      // Check if they want to create new room
+      if(roomID != users[socket.id].currentRoom && !rooms[roomID]){
 
-    // Set user turn number
-    newUser.number = Object.keys(rooms[roomID].users).length - 1;
+        users[socket.id].currentRoom = roomID;
+        const newRoom = new Room(roomID);
+        // Because user made room, make host
+        users[socket.id].isHost = true;
+        socket.emit('isHost', uses[socket.id]);
+        // add user to newRoom, newRoom to rooms object, and join room
+        newRoom.users[socket.id] = users[socket.id];
+        rooms[roomID] = newRoom;
+        socket.join(roomID);
+        // Set user turn number
+        users[socket.id].number = Object.keys(rooms[roomID].users).length - 1;
+        console.log('==============')
+        console.log('ROOMS')
+        console.log('==============')
+        console.log(rooms)
+        // display username and room code
+        socket.emit('HUD', username);
+        io.to(roomID).emit('playerJoined', rooms[roomID].users);
+      } else if(roomID != users[socket.id].currentRoom){
+        rooms[roomID].users[socket.id] = users[socket.id];
+        socket.join(roomID);
+        io.to(roomID).emit('playerJoined', rooms[roomID].users);
+      } else {
+        socket.join(roomID);
+        io.to(roomID).emit('playerJoined', rooms[roomID].users);
+      }
+    };
 
-    // add user to users object, server console rooms and users
-    users[socket.id] = newUser;
-
-    console.log('==============')
-    console.log('ROOMS')
-    console.log('==============')
-    console.log(rooms)
-
-    // display username and room code
-    socket.emit('HUD', username);
-    io.to(rooms[roomID].id).emit('playerJoined', users);
-
-    // on disconnect, remove user from users object and room
     socket.on('disconnect', () => {
       console.log(`${socket.id} disconnected!`);
-      if(users[socket.id]){
-        delete users[socket.id];
-      }
-      if(rooms[roomID].users[socket.id]){
-        delete rooms[roomID].users[socket.id]
+      console.log(`======= users =======`);
+      console.log(users);
+      console.log(`======= rooms =======`);
+      console.log(rooms);
+      // give user expiration time
+      if(users[socket.id] != undefined){
+        users[socket.id].expiration = new Date().getTime() + 5000;
       }
       // if no users in room on disconnect, delete room
-      if(isObjectEmpty(rooms[roomID].users) === true){
-        delete rooms[roomID]
+      if(rooms[roomID] != undefined && isObjectEmpty(rooms[roomID].users) === true){
+        delete rooms[roomID];
       }
     })
   })
@@ -139,7 +201,7 @@ io.on('connection', (socket) => {
     // Pick random player number for currentTurn
     room.currentTurn = Math.floor(Math.random() * Object.keys(room.users).length);
     console.log(`${room.id}: startGame`);
-    io.to(room.id).emit('startGame', diceAmount);
+    io.to(room.id).emit('startGame', diceAmount, room);
     console.log('==============')
     console.log('USERS')
     console.log('==============')
@@ -190,6 +252,7 @@ io.on('connection', (socket) => {
     let loser;
 
     console.log(`${room.id}: callBluff`)
+    console.log(`Turn before losing dice: ${room.currentTurn}`)
 
     for(hand in room.dice){
       for(die in room.dice[hand]){
@@ -201,27 +264,27 @@ io.on('connection', (socket) => {
 
     if(actualQuantity.length >= room.currentBet.quantity){
       caller.numberOfDice--;
-      room.currentTurn = caller.number;
+      if(caller.numberOfDice == 0){
+        room.currentTurn = nextTurn(room);
+      }
       message = `${bluffer.username} was telling the truth! ${caller.numberOfDice == 0 ? `${caller.username} is out!` : `${caller.username} loses a die!`}`
       loser = caller;
     } else {
       bluffer.numberOfDice--;
       if(bluffer.numberOfDice != 0){
-      room.currentTurn = bluffer.number;
+        room.currentTurn = bluffer.number;
       }
       message = `${bluffer.username} was indeed bluffing. ${bluffer.numberOfDice == 0 ? `${bluffer.username} is out!` : `${bluffer.username} loses a die!`}`
       loser = bluffer;
     }
-    if(loser.numberOfDice == 0){
-      room.currentTurn = nextTurn(room);
-    }
 
-    io.to(room.id).emit('callBluff', room, bluffer, caller, message);
+    console.log(`Turn after losing dice: ${room.currentTurn}`);
 
     if(loser.numberOfDice == 0){
       console.log(`${room.id}: ${loser.username}: playerOut`)
       io.to(loser.id).emit('playerOut');
     }
+    io.to(room.id).emit('callBluff', room, bluffer, caller, message);
   })
   socket.on('nextRound', () => {
     let room = rooms[users[socket.id].currentRoom];
@@ -252,22 +315,30 @@ io.on('connection', (socket) => {
       })
       return number;
     }
-
-    // let startingPlayer = room.users[Object.keys(room.users)[room.currentTurn]];
-    // socket.leave(room);
     delete room.users[socket.id]
     delete users[socket.id]
-    // reassign player turn numbers
     for(user in room.users){
       room.users[user].number = reassignNumber(user);
     }
     room.currentTurn = previousTurn(room);
-    console.log(`======= new user numbers =======`);
-    console.log(room.users);
-
+    console.log(`Turn after kicking player: ${room.currentTurn}`);
     if(Object.keys(room.users).length == 1){
       io.to(room.id).emit('winner', room.users)
+      delete rooms[room.id];
     }
+  })
+  socket.on('sendState', (stateOfDisplays, state) => {
+    socket.emit('updateState', stateOfDisplays, state)
+  })
+  socket.on('skipPlayer', () => {
+    if(users[socket.id].isHost !== true){
+      return;
+    }
+    let room = rooms[users[socket.id].currentRoom];
+    console.log(`${room.id}: ${room.users[socket.id].username}: skipPlayer`)
+    io.to(Object.keys(room.users)[room.currentTurn]).emit('skippingTurn', room)
+    room.currentTurn = nextTurn(room);
+    io.to(room.id).emit('updateBet', room);
   })
 });
 

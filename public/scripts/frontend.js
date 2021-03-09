@@ -7,12 +7,14 @@ const
       callButton = document.body.querySelector('#callButton'),
       raiseButton = document.body.querySelector('#raiseButton'),
       submitButton = document.body.querySelector('#submitButton'),
+      reconnectButton = document.body.querySelector('#reconnectButton'),
       randomizeButton = document.body.querySelector('#randomizeButton'),
       nextRoundButton = document.body.querySelector('#nextRound'),
       playAgainButton = document.body.querySelector('#playAgain'),
+      skipPlayerButton = document.body.querySelector('#skipPlayerButton'),
+      kickPlayerButton = document.body.querySelector('#kickPlayerButton'),
 
     //  UI elements
-      gameUI = document.body.querySelector('#gameUI'),
       setupUI = document.body.querySelector('#setupUI'),
       rollUI = document.body.querySelector('#rollUI'),
       callUI = document.body.querySelector('#callUI'),
@@ -20,6 +22,7 @@ const
       roomUI = document.body.querySelector('#roomUI'),
       warningUI = document.body.querySelector('#warningUI'),
       playersList = document.body.querySelector('#playersList'),
+      hostControls = document.body.querySelector('#hostControls'),
 
     //   Inputs
       dicePerPlayerField = document.body.querySelector('#dicePerPlayer'),
@@ -52,13 +55,38 @@ let roomID = undefined;
 let isBetOkay = false;
 let isOut = false;
 let dieWidth = '44px';
+let state = {lobby: true,
+             rolling: false,
+             waiting: false,
+             calling: false,
+             raising: false,
+             roundEnd: false,
+             winner: false,
+};
+let displays = {
+    betDisplay,
+    betUI,
+    callUI,
+    diceCup,
+    hudDisplay,
+    kickPlayerButton,
+    nextRoundButton,
+    otherDice,
+    playAgainButton,
+    playersList,
+    rollUI,
+    roomUI,
+    setupUI,
+    skipPlayerButton,
+    warningUI
+};
 
 dicePerPlayerField.addEventListener('input', function(){
     updateRangeValue();
     dicePerPlayer = parseInt(this.value);
 })
 
-// Functions:
+//================== Functions: ===========================
 
 const dieFaces = (user, dieWidth) => { return {1:`<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-1" viewBox="0 0 16 16">
 <circle cx="8" cy="8" r="1.5"/></svg>`,
@@ -77,6 +105,96 @@ const dieFaces = (user, dieWidth) => { return {1:`<svg xmlns="http://www.w3.org/
 6:`<svg xmlns="http://www.w3.org/2000/svg" width='${dieWidth}' height='${dieWidth}' fill="${user.numberColor}" class="bi bi-dice-6" viewBox="0 0 16 16">
 <path d="M5.5 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm8 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-8 4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-4a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
 </svg>`}}
+
+
+const autofillFields = () => {
+    let username = localStorage.getItem('username');
+    let room = localStorage.getItem('room');
+    if(username != null){
+        nameInput.value = username;
+    }
+    if(room != null){
+        roomInput.value = room;
+        reconnectButton.classList.remove('d-none');
+    }
+
+}
+const changeState = (state, prop) => {
+    for(el in state){
+        if(el == prop){
+            state[el] = true;
+        } else {
+            state[el] = false;
+        }
+    }
+}
+
+const setExpiration = () => {
+    let expiration = (new Date().getTime())+3600000;
+    localStorage.setItem('expiration', expiration);
+}
+
+// possible states: Waiting for players to join (isHost & not), 
+                    // rolling dice, 
+                    // not your turn, 
+                    // your turn call/raise, 
+                    // your turn raising,
+                    // not your turn after call,
+                    // your turn after call,
+                    // you're out after call,
+                    // other player wins?
+                    // you win?
+
+
+const saveState = () => {
+    stateOfDisplays = {
+        betDisplay: betDisplay.classList.value.indexOf('d-none'),
+        betUI: betUI.classList.value.indexOf('d-none'),
+        callUI: callUI.classList.value.indexOf('d-none'),
+        diceCup: diceCup.classList.value.indexOf('d-none'),
+        hudDisplay: hudDisplay.classList.value.indexOf('d-none'),
+        nextRoundButton: nextRoundButton.classList.value.indexOf('d-none'),
+        otherDice: otherDice.classList.value.indexOf('d-none'),
+        playAgainButton: playAgainButton.classList.value.indexOf('d-none'),
+        playersList: playersList.classList.value.indexOf('d-none'),
+        rollUI: rollUI.classList.value.indexOf('d-none'),
+        roomUI: roomUI.classList.value.indexOf('d-none'),
+        setupUI: setupUI.classList.value.indexOf('d-none'),
+        warningUI: warningUI.classList.value.indexOf('d-none'),
+    }
+    socket.emit('sendState', stateOfDisplays, state);
+}
+const setState = (stateOfDisplays) => {
+    for(el in stateOfDisplays){
+        console.log(`===============`)
+        if(stateOfDisplays[el] == 0){
+            console.log(`${el} is d:none`);
+            displays[el].classList.add('d-none');
+        }
+        if(stateOfDisplays[el] == -1){
+            console.log(`${el} is visible`);
+            displays[el].classList.remove('d-none');
+        }
+    }
+}
+socket.on('updateState', (stateOfDisplays, state) => {
+    setState(stateOfDisplays);
+})
+
+const getStorage = () => {
+   let expiration = localStorage.getItem('expiration');
+   if(expiration != null && expiration < (new Date().getTime())){
+        localStorage.clear();
+   }
+   let id = localStorage.getItem('socket.id');
+    if(id == undefined){
+        id = socket.id;
+        localStorage.setItem('socket.id', socket.id)
+        setExpiration();
+    }
+    return id;
+    // check if room exists, autofill username and room if so
+}
 
 const updateRangeValue = () => {
     rangeValue.innerText = dicePerPlayerField.value;
@@ -143,12 +261,15 @@ const calculateQuantity = (room) => {
         betQuantity.append(newOption);
     }
 }
-const startGame = (diceAmount) => {
+const startGame = (diceAmount, room) => {
     dicePerPlayer = diceAmount;
     setupUI.classList.add('d-none');
     diceCup.classList.remove('d-none');
     rollUI.classList.remove('d-none');
     playersList.classList.add('d-none');
+    if(room.users[socket.id].isHost == true){
+        hostControls.classList.remove('d-none');
+    }
 } 
 const HUD = (username) => {
     hudDisplay.classList.remove('d-none');
@@ -209,6 +330,7 @@ const nextRound = (startingPlayer) => {
     otherDice.classList.add('d-none');
     diceCup.firstElementChild.innerHTML = `${!isOut ? `This is where your dice will go. <br> It's ${startingPlayer.username}'s turn.` : ``}`;
     rollUI.classList.remove('d-none');
+    setExpiration();
 }
 
 const displayDice = (dice, users) => {
@@ -279,6 +401,13 @@ const makeBet = (room) => {
         return false;
     }
 }
+
+const skipPlayer = () => {
+        socket.emit('skipPlayer');
+}
+const kickPlayer = () => {
+        socket.emit('kickPlayer');
+}
 const winner = users => {
     rollUI.innerHTML = '';
     callUI.innerHTML = '';
@@ -293,12 +422,18 @@ const winner = users => {
     playAgainButton.classList.remove('d-none');
 }
 
+
+// ==================================================
+//              Chronology
+// ==================================================
+
+// autofillFields();
+
 form.addEventListener('submit', e => {
     e.preventDefault();
-    let username, diceColor, numberColor;
-    username = nameInput.value;
-    diceColor = userColor.value;
-    numberColor = fontColor.value;
+    let username = nameInput.value,
+        diceColor = userColor.value,
+        numberColor = fontColor.value;
     if (roomInput.value) {
         roomID = roomInput.value.toUpperCase()
     } else {
@@ -311,28 +446,31 @@ form.addEventListener('submit', e => {
     })
     roomUI.classList.add('d-none');
     playersList.classList.remove('d-none');
+    window.localStorage.setItem('username', username);
+    window.localStorage.setItem('room', roomID);
 });    
 
 
 //====== Receiving broadcast events ================
 
-
+socket.on('getStorage', () => {
+    const id = getStorage();
+    socket.emit('setID', id)
+})
 socket.on('HUD', (username) => {
     HUD(username);
 });
-socket.on('startGame', (diceAmount) => {
-    startGame(diceAmount)
+socket.on('startGame', (diceAmount, room) => {
+    // show roll dice
+    startGame(diceAmount, room)
 });
 socket.on('addingDice', (dice, users) => {
     displayDice(dice, users);
 });
 socket.on('playerJoined', (users) => {
     playersList.innerHTML = `<h2>Players:</h2>`;
-
     for(id in users){
-        if(users[id].currentRoom === roomID){
             playersList.innerHTML += `<h4>${users[id].username}</h4>`
-        }
     }
 })
 socket.on('rollDice', (user, users, room) => {
@@ -353,6 +491,7 @@ socket.on('roundStart', (room) => {
         betUI.classList.remove('d-none');
         calculateQuantity(room);
     }
+    // state: waiting
 })
 socket.on('makeBet', (room) => {
     let bet = makeBet(room);
@@ -387,6 +526,12 @@ socket.on('playerOut', () => {
 })
 socket.on('winner', users => {
     winner(users);
+    localStorage.removeItem('room');
+})
+socket.on('skippingTurn', (room) => {
+    isYourTurn = false;
+    betUI.classList.add('d-none');
+    callUI.classList.add('d-none');
 })
 
 
@@ -406,9 +551,6 @@ const emitCallBluff = () => {
     callUI.classList.add('d-none');
     socket.emit('callBluff');
 }
-const emitPlayerJoined = () => {
-    socket.emit('playerJoined');
-}
 
 const emitRoundStart = () => {
     socket.emit('roundStart');
@@ -419,6 +561,7 @@ const emitNextRound = () => {
     socket.emit('nextRound');
 }
 
+
 startButton.addEventListener('click', emitStartGame)
 rollButton.addEventListener('click', emitRollDice)
 betButton.addEventListener('click', emitMakeBet)
@@ -426,5 +569,7 @@ raiseButton.addEventListener('click', emitClickedRaise)
 callButton.addEventListener('click', emitCallBluff)
 randomizeButton.addEventListener('click', randomColor)
 nextRoundButton.addEventListener('click', emitNextRound);
+skipPlayerButton.addEventListener('click', skipPlayer);
+kickPlayerButton.addEventListener('click', kickPlayer);
 fontColor.addEventListener('change', updateNumberColor)
 userColor.addEventListener('change', updateDieColor)

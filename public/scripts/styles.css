@@ -126,26 +126,17 @@ body{
     font-size: 3rem;
     color: #005cc8;
 }
-#startButton{
-    position: fixed;
-    bottom: 10vh;
-
-}
-#rollAllDice{
-    position: fixed;
-    bottom: 10vh;
-}
-#makeBet{
-    position: fixed;
-    bottom: 10vh;
-}
-#nextRound{
-    position: fixed;
-    bottom: 10vh;
-}
+#startButton, 
+#rollAllDice, 
+#makeBet, 
+#nextRound, 
 #playAgain{
     position: fixed;
     bottom: 10vh;
+}
+#reconnectButton{
+    background-color: #824ec7;
+    color: #ffffff;
 }
 #playersList{
     margin-top: 15px;
