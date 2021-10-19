@@ -2,4 +2,3 @@ node_modules
 .DS_Store
 Public/.DS_Store
 .env
-.gitignore
