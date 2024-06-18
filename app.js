@@ -67,10 +67,12 @@ app.get('/', (req, res) => {
 // }, 5000);
 
 io.on('connection', (socket) => {
+
+  // bug: redefining socket breaks things because it's no longer in it's own socket, check socket.rooms
   // socket.emit('getStorage');
 
   // socket.on('setID', id => {
-  //   socket.id = id;
+    // socket.id = id;
     console.log(`The user ${socket.id} connected`);
   // })
 
@@ -104,9 +106,24 @@ io.on('connection', (socket) => {
   socket.on('login', (roomID, username, diceColor, numberColor) => {
     console.log(`${roomID}: ${socket.id}: ${username}: login`);
     if(users[socket.id] != undefined && roomID == rooms[roomID].id){
-      socket.join(roomID)
-      // socket.emit('reconnect', state)
-      // 
+      let room = rooms[users[socket.id].currentRoom];
+      socket.join(room.id)
+      io.to(room.id).emit('getState');
+      const getPrevUserID = () => {
+        let prevUserNumber = previousTurn(room);
+        let prevUserID;
+        for(user in room.users){
+          if(room.users[user].number == prevUserNumber){
+            prevUserID = user;
+          }
+        }
+        return prevUserID;
+      }
+      let prevUser = room.users[getPrevUserID()];
+      console.log(`=======prevUser=========`);
+      console.log(prevUser);
+     
+      // socket.emit('updateState', prevUser);
     }
     // if user doesn't exist:
     if(users[socket.id] == undefined){
@@ -142,7 +159,7 @@ io.on('connection', (socket) => {
       // display username and room code
       socket.emit('HUD', username);
       socket.join(roomID)
-      io.to(roomID).emit('playerJoined', rooms[roomID].users);
+      // io.to(roomID).emit('playerJoined', rooms[roomID].users);
     } else {
       // Check if they want to create new room
       if(roomID != users[socket.id].currentRoom && !rooms[roomID]){
@@ -164,16 +181,18 @@ io.on('connection', (socket) => {
         console.log(rooms)
         // display username and room code
         socket.emit('HUD', username);
-        io.to(roomID).emit('playerJoined', rooms[roomID].users);
       } else if(roomID != users[socket.id].currentRoom){
         rooms[roomID].users[socket.id] = users[socket.id];
         socket.join(roomID);
-        io.to(roomID).emit('playerJoined', rooms[roomID].users);
       } else {
         socket.join(roomID);
-        io.to(roomID).emit('playerJoined', rooms[roomID].users);
       }
     };
+    console.log(`emitting playerJoined to ${roomID}`);
+    socket.join(roomID);
+    console.log(socket.rooms);
+    io.to(roomID).emit('playerJoined', rooms[roomID].users);
+    io.to(roomID).emit('testtest');
 
     socket.on('disconnect', () => {
       console.log(`${socket.id} disconnected!`);
@@ -216,7 +235,7 @@ io.on('connection', (socket) => {
     let room = rooms[users[socket.id].currentRoom];
     console.log(`${room.id}: addingDice`)
     room.dice[socket.id] = hand;
-    io.to(room.id).emit('addingDice', room.dice, users);
+    io.to(room.id).emit('addingDice', room.dice, room.users);
   })
   socket.on('roundStart', ()=> {
     let room = rooms[users[socket.id].currentRoom];
@@ -327,8 +346,11 @@ io.on('connection', (socket) => {
       delete rooms[room.id];
     }
   })
-  socket.on('sendState', (stateOfDisplays, state) => {
-    socket.emit('updateState', stateOfDisplays, state)
+  socket.on('sendState', (stateOfDisplays) => {
+    let room = rooms[users[socket.id].currentRoom];
+    room.users[socket.id].state = stateOfDisplays;
+    console.log(room.users[socket.id]);
+    // socket.emit('updateState', stateOfDisplays)
   })
   socket.on('skipPlayer', () => {
     if(users[socket.id].isHost !== true){
@@ -340,6 +362,13 @@ io.on('connection', (socket) => {
     room.currentTurn = nextTurn(room);
     io.to(room.id).emit('updateBet', room);
   })
+
+  socket.on('ChangeMyID', ID => {
+    console.log(`socket.id was ${socket.id}`);
+    socket.id = ID;
+    console.log(`socket.id is now ${socket.id}`);
+  })
+
 });
 
 http.listen(port, () => {

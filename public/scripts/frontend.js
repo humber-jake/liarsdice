@@ -55,14 +55,13 @@ let roomID = undefined;
 let isBetOkay = false;
 let isOut = false;
 let dieWidth = '44px';
-let state = {lobby: true,
-             rolling: false,
-             waiting: false,
-             calling: false,
-             raising: false,
-             roundEnd: false,
-             winner: false,
-};
+// let state = {lobby: true,
+//              rolling: false,
+//              waiting: false,
+//              calling: false,
+//              raising: false,
+//              roundEnd: false,
+// };
 let displays = {
     betDisplay,
     betUI,
@@ -119,50 +118,43 @@ const autofillFields = () => {
     }
 
 }
-const changeState = (state, prop) => {
-    for(el in state){
-        if(el == prop){
-            state[el] = true;
-        } else {
-            state[el] = false;
-        }
-    }
-}
+// const changeState = (state, prop) => {
+//     for(el in state){
+//         if(el == prop){
+//             state[el] = true;
+//         } else {
+//             state[el] = false;
+//         }
+//     }
+// }
 
 const setExpiration = () => {
     let expiration = (new Date().getTime())+3600000;
     localStorage.setItem('expiration', expiration);
 }
 
-// possible states: Waiting for players to join (isHost & not), 
-                    // rolling dice, 
-                    // not your turn, 
-                    // your turn call/raise, 
-                    // your turn raising,
-                    // not your turn after call,
-                    // your turn after call,
-                    // you're out after call,
-                    // other player wins?
-                    // you win?
-
-
-const saveState = () => {
+const getStateOfDisplays = () => {
     stateOfDisplays = {
         betDisplay: betDisplay.classList.value.indexOf('d-none'),
+        // If betDisplay is visible, run updateBetDisplay to populate
         betUI: betUI.classList.value.indexOf('d-none'),
         callUI: callUI.classList.value.indexOf('d-none'),
         diceCup: diceCup.classList.value.indexOf('d-none'),
+        // if you have dice, show them, else "this is where your dice will go"
         hudDisplay: hudDisplay.classList.value.indexOf('d-none'),
         nextRoundButton: nextRoundButton.classList.value.indexOf('d-none'),
+        // check if your turn after bluff called to show this
         otherDice: otherDice.classList.value.indexOf('d-none'),
+        // if visible, displayDice
         playAgainButton: playAgainButton.classList.value.indexOf('d-none'),
         playersList: playersList.classList.value.indexOf('d-none'),
         rollUI: rollUI.classList.value.indexOf('d-none'),
         roomUI: roomUI.classList.value.indexOf('d-none'),
         setupUI: setupUI.classList.value.indexOf('d-none'),
         warningUI: warningUI.classList.value.indexOf('d-none'),
+        // need to populate this somehow
     }
-    socket.emit('sendState', stateOfDisplays, state);
+    return stateOfDisplays;
 }
 const setState = (stateOfDisplays) => {
     for(el in stateOfDisplays){
@@ -177,8 +169,7 @@ const setState = (stateOfDisplays) => {
         }
     }
 }
-socket.on('updateState', (stateOfDisplays, state) => {
-    setState(stateOfDisplays);
+socket.on('updateState', (users) => {
 })
 
 const getStorage = () => {
@@ -187,11 +178,13 @@ const getStorage = () => {
         localStorage.clear();
    }
    let id = localStorage.getItem('socket.id');
-    if(id == undefined){
+    if(id === null){
         id = socket.id;
         localStorage.setItem('socket.id', socket.id)
         setExpiration();
     }
+    socket.id = id;
+    console.log(`getStorage - ${id}`);
     return id;
     // check if room exists, autofill username and room if so
 }
@@ -309,6 +302,28 @@ const rollDice = (user, users, room) => {
         warningUI.innerText = `It's not your turn yet.`
     }
 }
+const displayDice = (dice, users) => {
+    otherDice.classList.remove('d-none');
+    otherDice.innerHTML = '';
+    for(hand in dice){
+        const faces = dieFaces(users[hand], dieWidth);
+        if(socket.id !== hand){
+            const diceRow = document.createElement('div');
+            for(die in dice[hand]){
+                // console.log(dice[hand][die].user.numberColor)
+                const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color};width:${dieWidth};height:${dieWidth}'>
+                                    <p class='qmark' style='color:${dice[hand][die].user.numberColor};font-size:2em;'>?<p>
+                                    <span class='dieFace d-none' style='width:${dieWidth};height:${dieWidth}'>${faces[dice[hand][die].value]}</span>
+                                  </span>`
+                diceRow.innerHTML += dieHTML;
+            }
+            otherDice.append(diceRow);
+        }
+    }
+}
+const restoreDice = (room) => {
+
+}
 
 const roundStart = (room) => {
     let allDice = 0, diceRolled = 0;
@@ -333,26 +348,6 @@ const nextRound = (startingPlayer) => {
     setExpiration();
 }
 
-const displayDice = (dice, users) => {
-    otherDice.classList.remove('d-none');
-    otherDice.innerHTML = '';
-    for(hand in dice){
-        const faces = dieFaces(users[hand], dieWidth);
-        if(socket.id !== hand){
-            const diceRow = document.createElement('div');
-            for(die in dice[hand]){
-                // console.log(dice[hand][die].user.numberColor)
-                const dieHTML = ` <span class='dice' style='background-color:${dice[hand][die].color};width:${dieWidth};height:${dieWidth}'>
-                                    <p class='qmark' style='color:${dice[hand][die].user.numberColor};font-size:2em;'>?<p>
-                                    <span class='dieFace d-none' style='width:${dieWidth};height:${dieWidth}'>${faces[dice[hand][die].value]}</span>
-                                  </span>`
-                diceRow.innerHTML += dieHTML;
-            }
-            otherDice.append(diceRow);
-        }
-    }
-}
-
 const callBluff = (room, bluffer, caller, message) => {
     const revealDice = () => {
         const qmarks = document.body.querySelector('#otherDice').querySelectorAll('.qmark');
@@ -372,6 +367,7 @@ const callBluff = (room, bluffer, caller, message) => {
     if(isYourTurn){
         nextRoundButton.classList.remove('d-none');
     }
+    // changeState(state, 'roundEnd');
 }
 const playerOut = () => {
     isOut = true;
@@ -457,17 +453,26 @@ socket.on('getStorage', () => {
     const id = getStorage();
     socket.emit('setID', id)
 })
+socket.on('getState', () => {
+    let stateOfDisplays = getStateOfDisplays();
+    socket.emit('sendState', stateOfDisplays);
+})
 socket.on('HUD', (username) => {
     HUD(username);
 });
 socket.on('startGame', (diceAmount, room) => {
-    // show roll dice
     startGame(diceAmount, room)
+    // changeState(state, 'rolling');
 });
 socket.on('addingDice', (dice, users) => {
     displayDice(dice, users);
 });
+socket.on('testtest', () => {
+    console.log(`Is this thing on?`);
+})
 socket.on('playerJoined', (users) => {
+    console.log(`PlayerJoined!`)
+    console.log(users);
     playersList.innerHTML = `<h2>Players:</h2>`;
     for(id in users){
             playersList.innerHTML += `<h4>${users[id].username}</h4>`
@@ -484,14 +489,16 @@ socket.on('roundStart', (room) => {
     } else if (ready && !isYourTurn){
         warningUI.classList.remove('d-none');
         warningUI.innerText = `It's ${room.users[Object.keys(room.users)[room.currentTurn]].username}'s turn!`
+        // changeState(state, 'waiting');
     }
     if(ready && isYourTurn){
         warningUI.classList.add('d-none');
         warningUI.innerText = '';
         betUI.classList.remove('d-none');
         calculateQuantity(room);
+        // If you reconnect on first turn, game will still show call button here
+        // changeState(state, 'calling');
     }
-    // state: waiting
 })
 socket.on('makeBet', (room) => {
     let bet = makeBet(room);
@@ -506,10 +513,12 @@ socket.on('updateBet', (room) => {
     updateBetDisplay(room);
     checkTurn(room);
     if(isYourTurn){
+        // changeState(state, 'calling');
         callUI.classList.remove('d-none');
     }
 })
 socket.on('clickedRaise', (room) => {
+    // changeState(state, 'raising');
     calculateQuantity(room);
     betUI.classList.remove('d-none');
     callUI.classList.add('d-none');
@@ -534,6 +543,10 @@ socket.on('skippingTurn', (room) => {
     callUI.classList.add('d-none');
 })
 
+
+const changeMyID = ID => {
+    socket.emit('ChangeMyID', ID)
+}
 
 const emitStartGame = () => {
     socket.emit('startGame', socket.id, dicePerPlayer);
