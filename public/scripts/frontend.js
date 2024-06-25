@@ -1,50 +1,50 @@
 // DOM stuff
-const // Buttons
-  startButton = document.body.querySelector('#startButton'),
-  rollButton = document.body.querySelector('#rollAllDice'),
-  betButton = document.body.querySelector('#makeBet'),
-  callButton = document.body.querySelector('#callButton'),
-  raiseButton = document.body.querySelector('#raiseButton'),
-  submitButton = document.body.querySelector('#submitButton'),
-  reconnectButton = document.body.querySelector('#reconnectButton'),
-  randomizeButton = document.body.querySelector('#randomizeButton'),
-  nextRoundButton = document.body.querySelector('#nextRound'),
-  playAgainButton = document.body.querySelector('#playAgain'),
-  skipPlayerButton = document.body.querySelector('#skipPlayerButton'),
-  kickPlayerButton = document.body.querySelector('#kickPlayerButton'),
-  //  UI elements
-  setupUI = document.body.querySelector('#setupUI'),
-  rollUI = document.body.querySelector('#rollUI'),
-  callUI = document.body.querySelector('#callUI'),
-  betUI = document.body.querySelector('#betUI'),
-  roomUI = document.body.querySelector('#roomUI'),
-  warningUI = document.body.querySelector('#warningUI'),
-  playersList = document.body.querySelector('#playersList'),
-  hostControls = document.body.querySelector('#hostControls'),
-  //   Inputs
-  dicePerPlayerField = document.body.querySelector('#dicePerPlayer'),
-  userColor = document.body.querySelector('#userColor'),
-  fontColor = document.body.querySelector('#numberColor'),
-  form = document.getElementById('form'),
-  roomInput = document.getElementById('input'),
-  nameInput = document.getElementById('username'),
-  betQuantity = document.body.querySelector('#betQuantity');
-(betValue = document.body.querySelector('#betValue')),
-  //   Displays
-  (diceCup = document.body.querySelector('#diceCup')),
-  (myDice = document.body.querySelector('#myDice')),
-  (otherDice = document.body.querySelector('#otherDice')),
-  (betDisplay = document.body.querySelector('#betDisplay'));
-sampleDie = document.body.querySelector('#sampleDie');
-sampleDieFace = document.body.querySelector('#sampleDieFace');
-(hudDisplay = document.body.querySelector('#HUD')),
-  (roomDisplay = document.body.querySelector('#roomDisplay')),
-  (nameDisplay = document.body.querySelector('#nameDisplay'));
-rangeValue = document.body.querySelector('#rangeValue');
+// Buttons
+const startButton = document.body.querySelector('#startButton');
+const rollButton = document.body.querySelector('#rollAllDice');
+const betButton = document.body.querySelector('#makeBet');
+const callButton = document.body.querySelector('#callButton');
+const raiseButton = document.body.querySelector('#raiseButton');
+const submitButton = document.body.querySelector('#submitButton');
+const reconnectButton = document.body.querySelector('#reconnectButton');
+const randomizeButton = document.body.querySelector('#randomizeButton');
+const nextRoundButton = document.body.querySelector('#nextRound');
+const playAgainButton = document.body.querySelector('#playAgain');
+const skipPlayerButton = document.body.querySelector('#skipPlayerButton');
+const kickPlayerButton = document.body.querySelector('#kickPlayerButton');
+//  UI element;
+const setupUI = document.body.querySelector('#setupUI');
+const rollUI = document.body.querySelector('#rollUI');
+const callUI = document.body.querySelector('#callUI');
+const betUI = document.body.querySelector('#betUI');
+const roomUI = document.body.querySelector('#roomUI');
+const warningUI = document.body.querySelector('#warningUI');
+const playersList = document.body.querySelector('#playersList');
+const hostControls = document.body.querySelector('#hostControls');
+//   Input;
+const dicePerPlayerField = document.body.querySelector('#dicePerPlayer');
+const userColor = document.body.querySelector('#userColor');
+const fontColor = document.body.querySelector('#numberColor');
+const form = document.getElementById('form');
+const roomInput = document.getElementById('input');
+const nameInput = document.getElementById('username');
+const betQuantity = document.body.querySelector('#betQuantity');
+const betValue = document.body.querySelector('#betValue');
+//   Displays
+const diceCup = document.body.querySelector('#diceCup');
+const myDice = document.body.querySelector('#myDice');
+const otherDice = document.body.querySelector('#otherDice');
+const betDisplay = document.body.querySelector('#betDisplay');
+const sampleDie = document.body.querySelector('#sampleDie');
+const sampleDieFace = document.body.querySelector('#sampleDieFace');
+const hudDisplay = document.body.querySelector('#HUD');
+const roomDisplay = document.body.querySelector('#roomDisplay');
+const nameDisplay = document.body.querySelector('#nameDisplay');
+const rangeValue = document.body.querySelector('#rangeValue');
 
 //   GameState stuff
 
-const socket = io();
+// const socket = io();
 let dicePerPlayer = 5;
 let isYourTurn = false;
 let roomID = undefined;
